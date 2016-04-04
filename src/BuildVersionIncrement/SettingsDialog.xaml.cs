@@ -29,8 +29,6 @@ namespace BuildVersionIncrement
 		internal SettingsDialog()
 		{
 			InitializeComponent();
-			HasMaximizeButton = true;
-			HasMinimizeButton = true;
 			ShowInTaskbar = false;
 
 		}
