@@ -1,0 +1,16 @@
+obj/
+bin/
+ClientBin/
+_Resharper*/
+packages/
+*.suo
+*.log
+index/
+*.user
+sys$command
+*.svclog
+*.stackdump
+log.txt
+*.mswwsettings
+Log4Net.logs/
+.vs/
