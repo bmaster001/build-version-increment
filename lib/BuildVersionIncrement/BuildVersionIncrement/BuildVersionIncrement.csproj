@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0D460423-5FA9-4B84-A2BE-CC9389D77008}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <StartupObject>
+    </StartupObject>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>BuildVersionIncrement</AssemblyName>
+    <RootNamespace>BuildVersionIncrement</RootNamespace>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>BuildVersionIncrement.snk</AssemblyOriginatorKeyFile>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PublishUrl>http://localhost/BuildVersionIncrement/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <IncrementalBuild>false</IncrementalBuild>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <IncrementalBuild>false</IncrementalBuild>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Install|AnyCPU' ">
+    <OutputPath>bin\Install\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug VS2005|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug VS2005\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug CommandLine|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug CommandLine\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug CommandLine Vista|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug CommandLine Vista\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>Migrated rules for BuildVersionIncrement.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\PublicAssemblies\EnvDTE.dll</HintPath>
+    </Reference>
+    <Reference Include="EnvDTE80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\PublicAssemblies\EnvDTE80.dll</HintPath>
+    </Reference>
+    <Reference Include="Extensibility, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AddInSettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddInSettingsForm.Designer.cs">
+      <DependentUpon>AddInSettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GlobalVariables.cs" />
+    <Compile Include="Incrementors\BaseIncrementor.cs" />
+    <Compile Include="Incrementors\BaseIncrementorConverter.cs" />
+    <Compile Include="Incrementors\BuiltInBaseIncrementor.cs" />
+    <Compile Include="Incrementors\IncrementContext.cs" />
+    <Compile Include="Incrementors\IncrementorCollection.cs" />
+    <Compile Include="BaseIncrementSettings.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="Qreed\CodePlex\VersionChecker.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Qreed\CodePlex\VersionChecker.Designer.cs">
+      <DependentUpon>VersionChecker.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Qreed\CodePlex\VersionCheckerEventArgs.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="ConfigurationStringConverter.cs" />
+    <Compile Include="Connect.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DateSpan.cs" />
+    <Compile Include="GlobalIncrementSettings.cs" />
+    <Compile Include="GlobalAddinSettings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>GlobalAddinSettings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="IconHelper.cs" />
+    <Compile Include="IconListManager.cs" />
+    <Compile Include="Qreed\Windows\ProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Qreed\Windows\ProgressDialog.designer.cs">
+      <DependentUpon>ProgressDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SolutionItemIncrementSettings.cs" />
+    <Compile Include="StringVersion.cs" />
+    <Compile Include="VersioningStyle.cs" />
+    <Compile Include="IVersionIncrementer.cs" />
+    <Compile Include="Qreed\Reflection\EnumHelper.cs" />
+    <Compile Include="Qreed\Reflection\ReflectionHelper.cs" />
+    <Compile Include="Qreed\VisualStudio\IVSAddin.cs" />
+    <Compile Include="Qreed\VisualStudio\VSAddin.cs" />
+    <Compile Include="Qreed\VisualStudio\VSMenu.cs" />
+    <Compile Include="Qreed\VisualStudio\VSMenuCommand.cs" />
+    <Compile Include="Qreed\VisualStudio\VSMenuQueryStatusEventArgs.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SolutionItem.cs" />
+    <Compile Include="StandardVersionIncrementer.cs" />
+    <Compile Include="BuildVersionIncrementor.cs" />
+    <Compile Include="WinWrapper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AddInSettingsForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AddInSettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Qreed\CodePlex\VersionChecker.resx">
+      <DependentUpon>VersionChecker.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CommandBar.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Qreed\Windows\ProgressDialog.resx">
+      <DependentUpon>ProgressDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Microsoft.VisualStudio.CommandBars">
+      <Guid>{1CBA492E-7263-47BB-87FE-639000619B15}</Guid>
+      <VersionMajor>8</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="stdole">
+      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Addin Files\BuildAddinFile.exe" />
+    <Content Include="Addin Files\BuildVersionIncrement_vs2008.Debug.Addin" />
+    <Content Include="Install\VS2005\BuildVersionIncrement.AddIn" />
+    <Content Include="Install\VS2008\BuildVersionIncrement.AddIn" />
+    <Content Include="Install\VS2010\BuildVersionIncrement.AddIn" />
+    <Content Include="Install\zip.exe" />
+    <Content Include="Qreed\Source.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="BuildVersionIncrement.snk" />
+    <None Include="GlobalAddinSettings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>GlobalAddinSettings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Install\CreateVSI.cmd" />
+    <None Include="Install\VS2005\BuildVersionIncrement.vscontent" />
+    <None Include="Install\VS2008\BuildVersionIncrement.vscontent" />
+    <None Include="Install\VS2010\BuildVersionIncrement.vscontent" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      @echo off
+
+      IF EXIST "%25USERPROFILE%25\My Documents" SET DOCUMENTSFOLDER=%25USERPROFILE%25\My Documents
+      IF EXIST "%25USERPROFILE%25\Documents" SET DOCUMENTSFOLDER=%25USERPROFILE%25\Documents
+
+      if "$(ConfigurationName)" == "Debug VS2005" goto DebugVS2005
+      if "$(ConfigurationName)" == "Debug VS2008" goto DebugVS2008
+      if "$(ConfigurationName)" == "Debug" goto DebugVS2010
+      if "$(ConfigurationName)" == "Release" goto DebugVS2010
+      if "$(ConfigurationName)" == "Debug CommandLine Vista" goto DebugVS2008
+      if not "$(ConfigurationName)" == "Install" goto exit
+
+      :CreateZips
+      copy /y "$(TargetPath)" "$(ProjectDir)Install\"
+      del "$(ProjectDir)Install\*.zip"
+      cd "$(ProjectDir)Install\
+
+      call CreateVSI.cmd
+
+      echo Creating release zip ...
+      zip "BuildVersionIncrement v2.5.zip" *.vsi
+
+      goto exit
+
+      :DebugVS2005
+      SET ADDINSFOLDER=%25DOCUMENTSFOLDER%25\Visual Studio 2005\Addins\
+
+      goto CreateAddinFile
+
+      :DebugVS2008
+
+      SET ADDINSFOLDER=%25DOCUMENTSFOLDER%25\Visual Studio 2008\Addins
+
+      goto CreateAddinFile
+
+      :DebugVS2010
+
+      SET ADDINSFOLDER=%25DOCUMENTSFOLDER%25\Visual Studio 2010\Addins
+
+      goto CreateAddinFile
+
+      :CreateAddinFile
+      echo Creating AddinFile in "%25ADDINSFOLDER%25"
+      IF NOT EXIST "%25ADDINSFOLDER%25\old" MKDIR "%25ADDINSFOLDER%25\old"
+      move /y "%25ADDINSFOLDER%25\BuildVersionIncrement*.Addin" "%25ADDINSFOLDER%25\old"
+
+      "$(ProjectDir)Addin Files\BuildAddinFile.exe" /a:"$(TargetPath)" /f:"%25ADDINSFOLDER%25\BuildVersionIncrement.$(ConfigurationName).Addin"
+
+      goto CreateZips
+
+      :exit
+</PostBuildEvent>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties BuildVersion_BuildVersioningStyle="None.None.YearDayOfYear.TimeStamp" BuildVersion_UpdateAssemblyVersion="False" BuildVersion_UpdateFileVersion="True" BuildVersion_ConfigurationName="Install" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<VSContent xmlns="http://schemas.microsoft.com/developer/vscontent/2005">
+  <Content>
+    <FileName>BuildVersionIncrement.Addin</FileName>
+    <FileName>BuildVersionIncrement.dll</FileName>
+    <DisplayName>Build Version Increment Addin</DisplayName>
+    <Description>Auto increments the build number of all projects of current solution.</Description>
+    <FileContentType>Addin</FileContentType>
+    <ContentVersion>1.0</ContentVersion>
+  </Content>
+</VSContent>
