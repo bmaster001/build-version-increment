@@ -1,9 +1,9 @@
-﻿// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: MenuCommandBase.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
-// Copyright © 2016 Paul J. Melia.
+// Copyright � 2016 Paul J. Melia.
 // All rights reserved.
 // ----------------------------------------------------------------------
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -19,32 +19,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Commands
 {
 	using System;
 	using System.ComponentModel.Design;
 
-	using Microsoft.VisualStudio;
 	using Microsoft.VisualStudio.Shell;
-	using Microsoft.VisualStudio.Shell.Interop;
 
-	internal sealed class SettingsCommand
+	internal abstract class MenuCommandBase<TCommand> where TCommand : MenuCommand
 	{
-		public const int CommandId = 0x0100;
+		public readonly Guid CommandSet = new Guid(Constants.COMMAND_SET);
 
-		public static readonly Guid CommandSet = new Guid("1a42bbb0-f5ad-4882-bf32-623425c6d577");
-
-		private readonly Package package;
-
-		private SettingsCommand(Package package)
+		internal MenuCommandBase(Package package)
 		{
 			if (package == null)
 			{
 				throw new ArgumentNullException(nameof(package));
 			}
+			ServiceProvider = package;
+			Initialise();
+		}
 
-			this.package = package;
+		public abstract int CommandId { get; }
 
+		protected IServiceProvider ServiceProvider { get; }
+
+		protected abstract TCommand GetCommand(CommandID menuCommandId);
+
+		protected virtual void InitialiseEvents(TCommand command) {}
+
+		private void Initialise()
+		{
 			var commandService =
 				ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 			if (commandService == null)
@@ -52,23 +57,11 @@ namespace BuildVersionIncrement
 				return;
 			}
 			var menuCommandId = new CommandID(CommandSet, CommandId);
-			var menuItem = new MenuCommand(ShowSettingsDialog, menuCommandId);
+			var menuItem = GetCommand(menuCommandId);
+
+			InitialiseEvents(menuItem);
+
 			commandService.AddCommand(menuItem);
-		}
-
-		public static SettingsCommand Instance { get; private set; }
-
-		private IServiceProvider ServiceProvider => package;
-
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog();
-			dialog.ShowModal();
 		}
 	}
 }

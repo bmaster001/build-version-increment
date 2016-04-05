@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: BuildVersionIncrementPackage.cs
+// Module Name: SettingsCommand.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,47 +19,35 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Commands
 {
-	using System.Diagnostics.CodeAnalysis;
-	using System.Runtime.InteropServices;
-
-	using Commands;
-
-	using log4net.Config;
+	using System;
+	using System.ComponentModel.Design;
 
 	using Microsoft.VisualStudio.Shell;
-	using Microsoft.VisualStudio.Shell.Interop;
 
-	[PackageRegistration(UseManagedResourcesOnly = true)]
-	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-
-	// Info on this package for Help/About
-	[ProvideMenuResource("Menus.ctmenu", 1)]
-	[Guid(PackageGuidString)]
-	[SuppressMessage("StyleCop.CSharp.DocumentationRules",
-		"SA1650:ElementDocumentationMustBeSpelledCorrectly",
-		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-	[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-	public sealed class BuildVersionIncrementPackage : Package
+	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
 	{
-		
-		public const string PackageGuidString = "d9498ed1-f738-4c84-9cbc-82ab0163d742";
+		private SettingsCommand(Package package) : base(package) {}
 
-		#region Package Members
-		
-		protected override void Initialize()
+		public static SettingsCommand Instance { get; private set; }
+
+		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
+
+		public static void Initialize(Package package)
 		{
-			XmlConfigurator.Configure();
-
-			SettingsCommand.Initialize(this);
-			VersionCommand.Initialize(this);
-			base.Initialize();
-
-			log4net.GlobalContext.Properties["package"] = this;
-
+			Instance = new SettingsCommand(package);
 		}
 
-		#endregion
+		protected override MenuCommand GetCommand(CommandID menuCommandId)
+		{
+			return new MenuCommand(ShowSettingsDialog, menuCommandId);
+		}
+
+		private static void ShowSettingsDialog(object sender, EventArgs e)
+		{
+			var dialog = new SettingsDialog();
+			dialog.ShowModal();
+		}
 	}
 }

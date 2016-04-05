@@ -1,9 +1,9 @@
-﻿// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: BuildVersionIncrementPackage.cs
+// Module Name: SolutionDependantCommandBase.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
-// Copyright © 2016 Paul J. Melia.
+// Copyright � 2016 Paul J. Melia.
 // All rights reserved.
 // ----------------------------------------------------------------------
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -19,47 +19,51 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Commands
 {
-	using System.Diagnostics.CodeAnalysis;
-	using System.Runtime.InteropServices;
-
-	using Commands;
-
-	using log4net.Config;
+	using System;
 
 	using Microsoft.VisualStudio.Shell;
 	using Microsoft.VisualStudio.Shell.Interop;
 
-	[PackageRegistration(UseManagedResourcesOnly = true)]
-	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-
-	// Info on this package for Help/About
-	[ProvideMenuResource("Menus.ctmenu", 1)]
-	[Guid(PackageGuidString)]
-	[SuppressMessage("StyleCop.CSharp.DocumentationRules",
-		"SA1650:ElementDocumentationMustBeSpelledCorrectly",
-		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-	[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-	public sealed class BuildVersionIncrementPackage : Package
+	internal abstract class SolutionDependantCommandBase : MenuCommandBase<OleMenuCommand>
 	{
-		
-		public const string PackageGuidString = "d9498ed1-f738-4c84-9cbc-82ab0163d742";
+		internal SolutionDependantCommandBase(Package package) : base(package) {}
 
-		#region Package Members
-		
-		protected override void Initialize()
+		protected override void InitialiseEvents(OleMenuCommand command)
 		{
-			XmlConfigurator.Configure();
-
-			SettingsCommand.Initialize(this);
-			VersionCommand.Initialize(this);
-			base.Initialize();
-
-			log4net.GlobalContext.Properties["package"] = this;
-
+			command.BeforeQueryStatus += MenuItem_BeforeQueryStatus;
+			base.InitialiseEvents(command);
 		}
 
-		#endregion
+		private void MenuItem_BeforeQueryStatus(object sender, EventArgs e)
+		{
+			var menuCommand = sender as OleMenuCommand;
+			if (menuCommand == null)
+			{
+				return;
+			}
+			menuCommand.Visible = false;
+			menuCommand.Enabled = false;
+
+			var solution = ServiceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+
+			if (solution == null)
+			{
+				return;
+			}
+
+			object objLoaded;
+			solution.GetProperty((int)__VSPROPID4.VSPROPID_IsSolutionFullyLoaded, out objLoaded);
+			if (objLoaded == null)
+			{
+				return;
+			}
+
+			var loaded = Convert.ToBoolean(objLoaded);
+
+			menuCommand.Visible = loaded;
+			menuCommand.Enabled = loaded;
+		}
 	}
 }

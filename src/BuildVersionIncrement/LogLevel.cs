@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: BuildVersionIncrementPackage.cs
+// Module Name: LogLevel.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -21,45 +21,12 @@
 
 namespace BuildVersionIncrement
 {
-	using System.Diagnostics.CodeAnalysis;
-	using System.Runtime.InteropServices;
-
-	using Commands;
-
-	using log4net.Config;
-
-	using Microsoft.VisualStudio.Shell;
-	using Microsoft.VisualStudio.Shell.Interop;
-
-	[PackageRegistration(UseManagedResourcesOnly = true)]
-	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-
-	// Info on this package for Help/About
-	[ProvideMenuResource("Menus.ctmenu", 1)]
-	[Guid(PackageGuidString)]
-	[SuppressMessage("StyleCop.CSharp.DocumentationRules",
-		"SA1650:ElementDocumentationMustBeSpelledCorrectly",
-		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-	[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-	public sealed class BuildVersionIncrementPackage : Package
+	public enum LogLevel
 	{
-		
-		public const string PackageGuidString = "d9498ed1-f738-4c84-9cbc-82ab0163d742";
-
-		#region Package Members
-		
-		protected override void Initialize()
-		{
-			XmlConfigurator.Configure();
-
-			SettingsCommand.Initialize(this);
-			VersionCommand.Initialize(this);
-			base.Initialize();
-
-			log4net.GlobalContext.Properties["package"] = this;
-
-		}
-
-		#endregion
+		Debug,
+		Info,
+		Warn,
+		Error,
+		Fatal
 	}
 }
