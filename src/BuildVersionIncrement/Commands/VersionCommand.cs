@@ -24,6 +24,8 @@ namespace BuildVersionIncrement.Commands
 	using System;
 	using System.ComponentModel.Design;
 
+	using Logging;
+
 	using Microsoft.VisualStudio.Shell;
 
 	internal sealed class VersionCommand : SolutionDependantCommandBase
@@ -31,10 +33,11 @@ namespace BuildVersionIncrement.Commands
 		public VersionCommand(Package package) : base(package) {}
 
 		public static VersionCommand Instance { get; private set; }
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
+		public override int CommandId => Constants.COMMAND_ID_VERSION;
 
 		public static void Initialize(Package package)
 		{
+			Logger.Write("Initialising package", LogLevel.Debug);
 			Instance = new VersionCommand(package);
 		}
 

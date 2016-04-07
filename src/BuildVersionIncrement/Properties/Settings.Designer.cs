@@ -8,16 +8,16 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace BuildVersionIncrement {
+namespace BuildVersionIncrement.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
-    internal sealed partial class BuildVersionIncrementSettings : global::System.Configuration.ApplicationSettingsBase {
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
-        private static BuildVersionIncrementSettings defaultInstance = ((BuildVersionIncrementSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new BuildVersionIncrementSettings())));
+        private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
         
-        public static BuildVersionIncrementSettings Default {
+        public static Settings Default {
             get {
                 return defaultInstance;
             }
@@ -32,18 +32,6 @@ namespace BuildVersionIncrement {
             }
             set {
                 this["IsEnabled"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1970-01-01")]
-        public global::System.DateTime LastVersionCheck {
-            get {
-                return ((global::System.DateTime)(this["LastVersionCheck"]));
-            }
-            set {
-                this["LastVersionCheck"] = value;
             }
         }
         
@@ -145,37 +133,13 @@ namespace BuildVersionIncrement {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool GlobalReplaceNonNumeric {
             get {
                 return ((bool)(this["GlobalReplaceNonNumeric"]));
             }
             set {
                 this["GlobalReplaceNonNumeric"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool GlobalUseUniveralClock {
-            get {
-                return ((bool)(this["GlobalUseUniveralClock"]));
-            }
-            set {
-                this["GlobalUseUniveralClock"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool GlobalIncrementBeforeBuild {
-            get {
-                return ((bool)(this["GlobalIncrementBeforeBuild"]));
-            }
-            set {
-                this["GlobalIncrementBeforeBuild"] = value;
             }
         }
         
@@ -205,13 +169,37 @@ namespace BuildVersionIncrement {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool DetectChanges {
             get {
                 return ((bool)(this["DetectChanges"]));
             }
             set {
                 this["DetectChanges"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool GlobalIncrementBeforeBuild {
+            get {
+                return ((bool)(this["GlobalIncrementBeforeBuild"]));
+            }
+            set {
+                this["GlobalIncrementBeforeBuild"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool GlobalUseUniversalClock {
+            get {
+                return ((bool)(this["GlobalUseUniversalClock"]));
+            }
+            set {
+                this["GlobalUseUniversalClock"] = value;
             }
         }
     }

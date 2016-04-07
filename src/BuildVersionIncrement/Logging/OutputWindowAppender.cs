@@ -19,7 +19,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Logging
 {
 	using System;
 	using System.Linq;
@@ -31,6 +31,8 @@ namespace BuildVersionIncrement
 	using log4net;
 	using log4net.Appender;
 	using log4net.Core;
+
+	using Microsoft.VisualStudio.Shell;
 
 	public class OutputWindowAppender : AppenderSkeleton
 	{
@@ -65,12 +67,12 @@ namespace BuildVersionIncrement
 						icon = vsTaskIcon.vsTaskIconSquiggle;
 					}
 					pane.OutputTaskItemString(message,
-					                          priority,
-					                          "BuildVersionIncrement",
-					                          icon,
-					                          null,
-					                          0,
-					                          message);
+											  priority,
+											  "BuildVersionIncrement",
+											  icon,
+											  null,
+											  0,
+											  message);
 					errorList.Parent.Activate();
 				}
 				return;

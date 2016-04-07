@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: BaseIncrementor.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,42 +19,33 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Commands
+namespace BuildVersionIncrement.Incrementors
 {
 	using System;
-	using System.ComponentModel.Design;
+	using System.ComponentModel;
 
-	using Microsoft.VisualStudio.Shell;
+	using Model;
 
-	using UI;
-
-	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	[TypeConverter(typeof(IncrementorBaseConverter))]
+	public abstract class IncrementorBase
 	{
-		private readonly Package _package;
-
-		private SettingsCommand(Package package) : base(package)
+		protected IncrementorBase()
 		{
-			_package = package;
+			Initialise();
 		}
 
-		public static SettingsCommand Instance { get; private set; }
-
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
-
-		public static void Initialize(Package package)
+		protected void Initialise()
 		{
-			Instance = new SettingsCommand(package);
+			if (string.IsNullOrEmpty(Name) || Name.Contains("."))
+			{
+				throw (new FormatException($"The Name property of the class {GetType().FullName} is invalid."));
+			}
 		}
 
-		protected override MenuCommand GetCommand(CommandID menuCommandId)
-		{
-			return new MenuCommand(ShowSettingsDialog, menuCommandId);
-		}
+		public abstract string Description { get; }
 
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog(_package);
-			dialog.ShowModal();
-		}
+		public abstract string Name { get; }
+
+		public abstract void Execute(IncrementContext context, VersionComponent versionComponent);
 	}
 }

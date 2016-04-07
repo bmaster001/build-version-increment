@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: LogLevel.cs
+// Module Name: IconExtensions.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,14 +19,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Extensions
 {
-	public enum LogLevel
+	using System.Drawing;
+	using System.Windows;
+	using System.Windows.Interop;
+	using System.Windows.Media;
+	using System.Windows.Media.Imaging;
+
+	public static class IconExtensions
 	{
-		Debug,
-		Info,
-		Warn,
-		Error,
-		Fatal
+		public static ImageSource ToImageSource(this Icon icon)
+		{
+			var hIcon = icon.Handle;
+			ImageSource wpfBitmap = Imaging.CreateBitmapSourceFromHIcon(hIcon,
+			                                                            Int32Rect.Empty,
+			                                                            BitmapSizeOptions.FromEmptyOptions());
+
+			return wpfBitmap;
+		}
 	}
 }

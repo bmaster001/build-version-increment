@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: ExceptionExtensions.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,42 +19,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Commands
+namespace BuildVersionIncrement.Extensions
 {
 	using System;
-	using System.ComponentModel.Design;
 
-	using Microsoft.VisualStudio.Shell;
-
-	using UI;
-
-	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	public static class ExceptionExtensions
 	{
-		private readonly Package _package;
-
-		private SettingsCommand(Package package) : base(package)
+		public static void Swallow(this Exception exception)
 		{
-			_package = package;
-		}
-
-		public static SettingsCommand Instance { get; private set; }
-
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
-
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		protected override MenuCommand GetCommand(CommandID menuCommandId)
-		{
-			return new MenuCommand(ShowSettingsDialog, menuCommandId);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog(_package);
-			dialog.ShowModal();
+			// do nothing.
 		}
 	}
 }

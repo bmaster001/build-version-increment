@@ -19,13 +19,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Logging
 {
 	using System;
 	using System.Reflection;
 	using System.Text;
 
 	using log4net;
+
+	using Properties;
 
 	public class Logger
 	{
@@ -45,9 +47,9 @@ namespace BuildVersionIncrement
 
 		internal string Contents => _contents.ToString();
 
-		public static void Write(string message, LogLevel logLevel)
+		public static void Write(string message, LogLevel logLevel = LogLevel.Info)
 		{
-			var globalLogLevel = BuildVersionIncrementSettings.Default.IsVerboseLogEnabled
+			var globalLogLevel = Settings.Default.IsVerboseLogEnabled
 				                     ? LogLevel.Debug
 				                     : LogLevel.Info;
 

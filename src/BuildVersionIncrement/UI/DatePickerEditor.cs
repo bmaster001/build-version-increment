@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: DatePickerEditor.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,42 +19,32 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Commands
+namespace BuildVersionIncrement.UI
 {
-	using System;
-	using System.ComponentModel.Design;
+	using System.Windows;
+	using System.Windows.Controls;
+	using System.Windows.Data;
 
-	using Microsoft.VisualStudio.Shell;
+	using Xceed.Wpf.Toolkit.PropertyGrid;
+	using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
-	using UI;
-
-	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	public class DatePickerEditor : ITypeEditor
 	{
-		private readonly Package _package;
-
-		private SettingsCommand(Package package) : base(package)
+		public FrameworkElement ResolveEditor(PropertyItem propertyItem)
 		{
-			_package = package;
-		}
+			var datePicker = new DatePicker();
 
-		public static SettingsCommand Instance { get; private set; }
+			var binding = new Binding("Value")
+			              {
+				              Source = propertyItem,
+				              Mode =
+					              propertyItem.IsReadOnly
+						              ? BindingMode.OneWay
+						              : BindingMode.TwoWay
+			              };
+			BindingOperations.SetBinding(datePicker, DatePicker.SelectedDateProperty, binding);
 
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
-
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		protected override MenuCommand GetCommand(CommandID menuCommandId)
-		{
-			return new MenuCommand(ShowSettingsDialog, menuCommandId);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog(_package);
-			dialog.ShowModal();
+			return datePicker;
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: DateSpan.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,42 +19,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Commands
+namespace BuildVersionIncrement.Helpers
 {
 	using System;
-	using System.ComponentModel.Design;
 
-	using Microsoft.VisualStudio.Shell;
-
-	using UI;
-
-	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	public class DateSpan
 	{
-		private readonly Package _package;
+		
+		public int Days { get; set; }
 
-		private SettingsCommand(Package package) : base(package)
+		
+		public int Months { get; set; }
+
+		
+		public int Years { get; set; }
+
+		
+		public static DateSpan GetDateDifference(DateTime date, DateTime dateToCompare)
 		{
-			_package = package;
-		}
 
-		public static SettingsCommand Instance { get; private set; }
+			var difference = date.Subtract(dateToCompare);
 
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
+			var offset = new DateTime(difference.Ticks);
 
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		protected override MenuCommand GetCommand(CommandID menuCommandId)
-		{
-			return new MenuCommand(ShowSettingsDialog, menuCommandId);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog(_package);
-			dialog.ShowModal();
+			return new DateSpan
+			         {
+				         Years = offset.Year - 1,
+				         Months = offset.Month - 1,
+				         Days = offset.Day - 1
+			         };
 		}
 	}
+
+
 }

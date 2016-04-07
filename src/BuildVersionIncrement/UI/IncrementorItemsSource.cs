@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: IncrementorItemsSource.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,42 +19,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Commands
+namespace BuildVersionIncrement.UI
 {
-	using System;
-	using System.ComponentModel.Design;
+	using Incrementors;
 
-	using Microsoft.VisualStudio.Shell;
+	using Model;
 
-	using UI;
+	using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
-	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	public class IncrementorItemsSource : IItemsSource
 	{
-		private readonly Package _package;
+		private readonly IncrementorCollection _incrementors =
+			BuildVersionIncrementor.Instance.Incrementors;
 
-		private SettingsCommand(Package package) : base(package)
+		public ItemCollection GetValues()
 		{
-			_package = package;
-		}
-
-		public static SettingsCommand Instance { get; private set; }
-
-		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
-
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		protected override MenuCommand GetCommand(CommandID menuCommandId)
-		{
-			return new MenuCommand(ShowSettingsDialog, menuCommandId);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog(_package);
-			dialog.ShowModal();
+			var values = new ItemCollection();
+			foreach (var names in _incrementors.GetIncrementorNames())
+			{
+				values.Add(_incrementors[names], names);
+			}
+			return values;
 		}
 	}
 }

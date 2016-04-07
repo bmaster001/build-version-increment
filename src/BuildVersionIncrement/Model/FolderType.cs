@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsDialog.xaml.cs
+// Module Name: FolderType.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,18 +19,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Model
 {
-	/// <summary>
-	///     Interaction logic for SettingsDialog.xaml
-	/// </summary>
-	public partial class SettingsDialog
+	public enum FolderType
 	{
-		internal SettingsDialog()
-		{
-			InitializeComponent();
-			ShowInTaskbar = false;
-
-		}
+		Open = 0,
+		Closed = 1
 	}
 }
