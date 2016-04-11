@@ -38,7 +38,7 @@ namespace BuildVersionIncrement.Incrementors
 		public IncrementorCollection()
 		{
 			// Add the static null instance to the list. This ensures that property grid references the "correct" null. 
-			_incrementors.Add(BuiltInIncrementorBase.None.Name, BuiltInIncrementorBase.None);
+			_incrementors.Add(BuiltInIncrementors.None.Name, BuiltInIncrementors.None);
 		}
 
 		public int Count => _incrementors.Keys.Count;
@@ -55,7 +55,7 @@ namespace BuildVersionIncrement.Incrementors
 
 			Logger.Write($"Located {types.Count} incrementors.", LogLevel.Debug);
 
-			foreach (var t in types.Where(t => t != typeof(BuiltInIncrementorBase.NoneIncrementor))) {
+			foreach (var t in types.Where(t => t != typeof(BuiltInIncrementors.NoneIncrementor))) {
 				Logger.Write($"Creating instance of incrementor type \"{t.FullName}\".");
 				var incrementor = (IncrementorBase)Activator.CreateInstance(t);
 

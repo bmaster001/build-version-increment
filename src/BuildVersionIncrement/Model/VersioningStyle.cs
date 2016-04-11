@@ -34,13 +34,13 @@ namespace BuildVersionIncrement.Model
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	internal class VersioningStyle
 	{
-		private IncrementorBase _build = BuiltInIncrementorBase.None;
+		private IncrementorBase _build = BuiltInIncrementors.None;
 
-		private IncrementorBase _major = BuiltInIncrementorBase.None;
+		private IncrementorBase _major = BuiltInIncrementors.None;
 
-		private IncrementorBase _minor = BuiltInIncrementorBase.None;
+		private IncrementorBase _minor = BuiltInIncrementors.None;
 
-		private IncrementorBase _revision = BuiltInIncrementorBase.None;
+		private IncrementorBase _revision = BuiltInIncrementors.None;
 
 		public VersioningStyle() {}
 
@@ -58,7 +58,7 @@ namespace BuildVersionIncrement.Model
 		[PropertyOrder(3)]
 		public IncrementorBase Build
 		{
-			get { return _build ?? BuiltInIncrementorBase.None; }
+			get { return _build ?? BuiltInIncrementors.None; }
 			set
 			{
 				Debug.Assert(value != null);
@@ -72,7 +72,7 @@ namespace BuildVersionIncrement.Model
 		[PropertyOrder(1)]
 		public IncrementorBase Major
 		{
-			get { return _major ?? BuiltInIncrementorBase.None; }
+			get { return _major ?? BuiltInIncrementors.None; }
 			set
 			{
 				Debug.Assert(value != null);
@@ -86,7 +86,7 @@ namespace BuildVersionIncrement.Model
 		[PropertyOrder(2)]
 		public IncrementorBase Minor
 		{
-			get { return _minor ?? BuiltInIncrementorBase.None; }
+			get { return _minor ?? BuiltInIncrementors.None; }
 			set
 			{
 				Debug.Assert(value != null);
@@ -100,7 +100,7 @@ namespace BuildVersionIncrement.Model
 		[PropertyOrder(4)]
 		public IncrementorBase Revision
 		{
-			get { return _revision ?? BuiltInIncrementorBase.None; }
+			get { return _revision ?? BuiltInIncrementors.None; }
 			set
 			{
 				Debug.Assert(value != null);
@@ -185,22 +185,22 @@ namespace BuildVersionIncrement.Model
 
 		private bool ShouldSerializeMajor()
 		{
-			return _major != BuiltInIncrementorBase.None;
+			return _major != BuiltInIncrementors.None;
 		}
 
 		private bool ShouldSerializeMinor()
 		{
-			return _minor != BuiltInIncrementorBase.None;
+			return _minor != BuiltInIncrementors.None;
 		}
 
 		private bool ShouldSerializeBuild()
 		{
-			return _build != BuiltInIncrementorBase.None;
+			return _build != BuiltInIncrementors.None;
 		}
 
 		private bool ShouldSerializeRevision()
 		{
-			return _revision != BuiltInIncrementorBase.None;
+			return _revision != BuiltInIncrementors.None;
 		}
 
 		#endregion
