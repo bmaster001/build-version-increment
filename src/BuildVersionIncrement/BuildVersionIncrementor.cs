@@ -19,7 +19,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement.Model
+namespace BuildVersionIncrement
 {
 	using System;
 	using System.Collections;
@@ -38,11 +38,10 @@ namespace BuildVersionIncrement.Model
 	using Logging;
 
 	using Microsoft.VisualStudio;
-	using Microsoft.VisualStudio.Shell;
+
+	using Model;
 
 	using Properties;
-
-	using Constants = BuildVersionIncrement.Constants;
 
 	internal class BuildVersionIncrementor
 	{
@@ -52,7 +51,7 @@ namespace BuildVersionIncrement.Model
 		private static readonly Dictionary<string, bool> _solutionItemCache =
 			new Dictionary<string, bool>();
 
-		private readonly Package _package;
+		private readonly BuildVersionIncrementPackage _package;
 
 		private readonly Dictionary<string, SolutionItem> _updatedItems =
 			new Dictionary<string, SolutionItem>();
@@ -63,7 +62,7 @@ namespace BuildVersionIncrement.Model
 
 		private vsBuildState _currentBuildState = vsBuildState.vsBuildStateInProgress;
 
-		public BuildVersionIncrementor(Package package)
+		public BuildVersionIncrementor(BuildVersionIncrementPackage package)
 		{
 			_package = package;
 			Instance = this;
@@ -85,7 +84,7 @@ namespace BuildVersionIncrement.Model
 
 				// ReSharper disable once AssignNullToNotNullAttribute
 				var files = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-											   "*.Incrementor.dll");
+				                               "*.Incrementor.dll");
 
 				foreach (var file in files)
 				{
@@ -135,12 +134,12 @@ namespace BuildVersionIncrement.Model
 				}
 
 				var activeConfigName = solutionItem.ItemType == SolutionItemType.Solution
-										   ? solutionItem.Solution.SolutionBuild.ActiveConfiguration.Name
-										   : solutionItem.Project.ConfigurationManager.ActiveConfiguration
-														 .ConfigurationName;
+					                       ? solutionItem.Solution.SolutionBuild.ActiveConfiguration.Name
+					                       : solutionItem.Project.ConfigurationManager.ActiveConfiguration
+					                                     .ConfigurationName;
 
 				if (solutionItem.IncrementSettings.ConfigurationName == "Any"
-					|| solutionItem.IncrementSettings.ConfigurationName == activeConfigName)
+				    || solutionItem.IncrementSettings.ConfigurationName == activeConfigName)
 				{
 					return true;
 				}
@@ -167,7 +166,7 @@ namespace BuildVersionIncrement.Model
 					return false;
 				}
 				Logger.Write($" Directory '{itemName}' was not found - assuming a clean build was made",
-							 LogLevel.Debug);
+				             LogLevel.Debug);
 				return true;
 			}
 			if (File.Exists(localPath))
@@ -175,7 +174,7 @@ namespace BuildVersionIncrement.Model
 				return false;
 			}
 			Logger.Write($" File '{itemName}' was not found - assuming a clean build was made",
-						 LogLevel.Debug);
+			             LogLevel.Debug);
 			return true;
 		}
 
@@ -190,25 +189,26 @@ namespace BuildVersionIncrement.Model
 				{
 					return true;
 				}
-				if (PropertyExists(item.Properties, Constants.PROPERTY_DATE_MODIFIED))
+				if (!PropertyExists(item.Properties, Constants.PROPERTY_DATE_MODIFIED))
 				{
-					var dateModifiedProp = item.Properties.Item(Constants.PROPERTY_DATE_MODIFIED);
-					var itemDateString = dateModifiedProp.Value.ToString();
+					return itemFileDate > outputFileDate;
+				}
+				var dateModifiedProp = item.Properties.Item(Constants.PROPERTY_DATE_MODIFIED);
+				var itemDateString = dateModifiedProp.Value.ToString();
 
+				try
+				{
+					itemFileDate = DateTime.Parse(itemDateString);
+				}
+				catch
+				{
 					try
 					{
-						itemFileDate = DateTime.Parse(itemDateString);
+						itemFileDate = DateTime.Parse(itemDateString, CultureInfo.InvariantCulture);
 					}
 					catch
 					{
-						try
-						{
-							itemFileDate = DateTime.Parse(itemDateString, CultureInfo.InvariantCulture);
-						}
-						catch
-						{
-							Logger.Write($"Cannot parse current item's date '{itemFileDate}'", LogLevel.Warn);
-						}
+						Logger.Write($"Cannot parse current item's date '{itemFileDate}'", LogLevel.Warn);
 					}
 				}
 			}
@@ -252,6 +252,37 @@ namespace BuildVersionIncrement.Model
 			return fileDate;
 		}
 
+		private static void PrepareSolutionItem(SolutionItem solutionItem)
+		{
+			if (solutionItem.ProjectType != LanguageType.None)
+			{
+				return;
+			}
+			var extension = Path.GetExtension(solutionItem.Filename);
+			switch (extension)
+			{
+				case ".vbproj":
+					solutionItem.ProjectType = LanguageType.VisualBasic;
+					break;
+				case ".vcproj":
+				case ".vcxproj":
+					solutionItem.ProjectType = LanguageType.CppManaged;
+					break;
+				case ".csproj":
+					solutionItem.ProjectType = LanguageType.CSharp;
+					break;
+			}
+			var assemblyInfo = solutionItem.FindProjectItem("AssemblyInfo.cpp");
+			if (assemblyInfo != null)
+			{
+				return;
+			}
+			if (extension == ".vcproj" || extension == ".vcxproj")
+			{
+				solutionItem.ProjectType = LanguageType.CppUnmanaged;
+			}
+		}
+
 		private static bool PropertyExists(IEnumerable properties, string propertyName)
 		{
 			return properties.Cast<Property>().Any(item => item.Name == propertyName);
@@ -266,35 +297,33 @@ namespace BuildVersionIncrement.Model
 			}
 			try
 			{
-				if (_currentBuildAction == vsBuildAction.vsBuildActionBuild
-					|| _currentBuildAction == vsBuildAction.vsBuildActionRebuildAll)
+				if (_currentBuildAction != vsBuildAction.vsBuildActionBuild
+				    && _currentBuildAction != vsBuildAction.vsBuildActionRebuildAll)
 				{
-					if (_currentBuildScope == vsBuildScope.vsBuildScopeSolution)
-					{
-						var solution = DTE.Solution;
-						var solutionItem = new SolutionItem(_package, solution, true);
-						UpdateRecursive(solutionItem);
-					}
-					else
-					{
-						var projects = (Array)DTE.ActiveSolutionProjects;
-						foreach (Project p in projects)
-						{
-							var solutionItem = SolutionItem.ConstructSolutionItem(_package, p, false);
-
-							if (solutionItem != null)
-							{
-								if (IsSolutionItemModified(solutionItem))
-								{
-									UpdateProject(solutionItem);
-								}
-							}
-						}
-					}
-
-					Logger.Write(
-						$"{(_currentBuildState == vsBuildState.vsBuildStateInProgress ? "Pre" : "Post")}-build process : Completed");
+					return;
 				}
+				if (_currentBuildScope == vsBuildScope.vsBuildScopeSolution)
+				{
+					var solution = DTE.Solution;
+					var solutionItem = new SolutionItem(_package, solution, true);
+					UpdateRecursive(solutionItem);
+				}
+				else
+				{
+					var projects = (Array)DTE.ActiveSolutionProjects;
+					foreach (var solutionItem in from Project p in projects
+					                             select SolutionItem.ConstructSolutionItem(_package, p, false)
+					                             into solutionItem
+					                             where solutionItem != null
+					                             where IsSolutionItemModified(solutionItem)
+					                             select solutionItem)
+					{
+						UpdateProject(solutionItem);
+					}
+				}
+
+				Logger.Write(
+					$"{(_currentBuildState == vsBuildState.vsBuildStateInProgress ? "Pre" : "Post")}-build process : Completed");
 			}
 			catch (Exception ex)
 			{
@@ -415,8 +444,8 @@ namespace BuildVersionIncrement.Model
 					outputFileName = project.Properties.Item(Constants.PROPERTY_OUTPUT_FILE_NAME).Value.ToString();
 					fullPath = project.Properties.Item(Constants.PROPERTY_FULL_PATH).Value.ToString();
 					fullPath = Path.Combine(fullPath,
-											activeConfiguration.Properties.Item(Constants.PROPERTY_OUTPUT_PATH)
-															   .Value.ToString());
+					                        activeConfiguration.Properties.Item(Constants.PROPERTY_OUTPUT_PATH)
+					                                           .Value.ToString());
 				}
 				catch
 				{
@@ -424,17 +453,17 @@ namespace BuildVersionIncrement.Model
 					{
 						var prj = project.Properties.Item(Constants.PROPERTY_PROJECT).Object;
 						var configurations = prj.GetType()
-												.InvokeMember(Constants.MEMBER_CONFIGURATIONS,
-															  BindingFlags.GetProperty,
-															  null,
-															  prj,
-															  null);
+						                        .InvokeMember(Constants.MEMBER_CONFIGURATIONS,
+						                                      BindingFlags.GetProperty,
+						                                      null,
+						                                      prj,
+						                                      null);
 						var cfg = configurations.GetType()
-												.InvokeMember(Constants.MEMBER_ITEM,
-															  BindingFlags.InvokeMethod,
-															  null,
-															  configurations,
-															  new object[] { 1 });
+						                        .InvokeMember(Constants.MEMBER_ITEM,
+						                                      BindingFlags.InvokeMethod,
+						                                      null,
+						                                      configurations,
+						                                      new object[] {1});
 						var fullPathToOutputFile = string.Empty;
 						if (cfg != null)
 						{
@@ -462,12 +491,13 @@ namespace BuildVersionIncrement.Model
 				var outputFileDate = GetCachedFileDate(outputFileName, fullPath);
 				foreach (ProjectItem item in project.ProjectItems)
 				{
-					if (item.Kind == VSConstants.GUID_ItemType_PhysicalFolder.ToString()
-						|| item.Kind == VSConstants.GUID_ItemType_VirtualFolder.ToString())
+					var kind = Guid.Parse(item.Kind);
+					if (kind == VSConstants.GUID_ItemType_PhysicalFolder
+					    || kind == VSConstants.GUID_ItemType_VirtualFolder)
 					{
 						if (
 							!item.ProjectItems.Cast<ProjectItem>()
-								 .Any(innerItem => CheckProjectItem(innerItem, outputFileDate)))
+							     .Any(innerItem => CheckProjectItem(innerItem, outputFileDate)))
 						{
 							continue;
 						}
@@ -510,7 +540,7 @@ namespace BuildVersionIncrement.Model
 			if (!solutionItem.IncrementSettings.DetectChanges)
 			{
 				Logger.Write($"Detect changes disabled. Mark item '{solutionItem.Name}' as modified.",
-							 LogLevel.Debug);
+				             LogLevel.Debug);
 				_solutionItemCache.Add(key, true);
 				return true;
 			}
@@ -519,36 +549,37 @@ namespace BuildVersionIncrement.Model
 			switch (solutionItem.ItemType)
 			{
 				case SolutionItemType.Project:
-					{
-						var result = IsProjectModified(solutionItem.Project);
-						_solutionItemCache.Add($"{solutionItem.ItemType}:{solutionItem.Name}", result);
-						return result;
-					}
+				{
+					var result = IsProjectModified(solutionItem.Project);
+					_solutionItemCache.Add($"{solutionItem.ItemType}:{solutionItem.Name}", result);
+					return result;
+				}
 				case SolutionItemType.Folder:
 				case SolutionItemType.Solution:
+				{
+					var result = false;
+					foreach (var subItem in solutionItem.SubItems)
 					{
-						var result = false;
-						foreach (var subItem in solutionItem.SubItems)
+						// ReSharper disable once SwitchStatementMissingSomeCases
+						switch (subItem.ItemType)
 						{
-							switch (subItem.ItemType)
-							{
-								case SolutionItemType.Project:
-									result = IsProjectModified(subItem.Project);
-									_solutionItemCache.Add($"{subItem.ItemType}:{subItem.Name}", result);
-									break;
-								case SolutionItemType.Folder:
-									result = IsSolutionItemModified(subItem);
-									break;
-							}
-							if (result)
-							{
+							case SolutionItemType.Project:
+								result = IsProjectModified(subItem.Project);
+								_solutionItemCache.Add($"{subItem.ItemType}:{subItem.Name}", result);
 								break;
-							}
+							case SolutionItemType.Folder:
+								result = IsSolutionItemModified(subItem);
+								break;
 						}
-						Logger.Write($"Solution/Folder '{solutionItem.Name}' is not modified", LogLevel.Debug);
-						_solutionItemCache.Add(key, result);
-						return result;
+						if (result)
+						{
+							break;
+						}
 					}
+					Logger.Write($"Solution/Folder '{solutionItem.Name}' is not modified", LogLevel.Debug);
+					_solutionItemCache.Add(key, result);
+					return result;
+				}
 				case SolutionItemType.None:
 					break;
 				default:
@@ -562,91 +593,62 @@ namespace BuildVersionIncrement.Model
 			return true;
 		}
 
-		private void PrepareSolutionItem(SolutionItem solutionItem)
-		{
-			if (solutionItem.ProjectType != LanguageType.None)
-			{
-				return;
-			}
-			var extension = Path.GetExtension(solutionItem.Filename);
-			switch (extension)
-			{
-				case ".vbproj":
-					solutionItem.ProjectType = LanguageType.VisualBasic;
-					break;
-				case ".vcproj":
-				case ".vcxproj":
-					solutionItem.ProjectType = LanguageType.CppManaged;
-					break;
-				case ".csproj":
-					solutionItem.ProjectType = LanguageType.CSharp;
-					break;
-			}
-			var assemblyInfo = solutionItem.FindProjectItem("AssemblyInfo.cpp");
-			if (assemblyInfo == null)
-			{
-				if (extension == ".vcproj" || extension == ".vcxproj")
-				{
-					solutionItem.ProjectType = LanguageType.CppUnmanaged;
-				}
-			}
-		}
-
 		private void Update(SolutionItem solutionItem, string attribute)
 		{
 			if (solutionItem.IncrementSettings.BuildAction == BuildActionType.Both
-				|| (solutionItem.IncrementSettings.BuildAction == BuildActionType.Build
-					&& _currentBuildAction == vsBuildAction.vsBuildActionBuild)
-				|| (solutionItem.IncrementSettings.BuildAction == BuildActionType.ReBuild
-					&& _currentBuildAction == vsBuildAction.vsBuildActionRebuildAll))
+			    || (solutionItem.IncrementSettings.BuildAction == BuildActionType.Build
+			        && _currentBuildAction == vsBuildAction.vsBuildActionBuild)
+			    || (solutionItem.IncrementSettings.BuildAction == BuildActionType.ReBuild
+			        && _currentBuildAction == vsBuildAction.vsBuildActionRebuildAll))
 			{
 				if ((solutionItem.IncrementSettings.IncrementBeforeBuild)
-					== (_currentBuildState == vsBuildState.vsBuildStateInProgress))
+				    != (_currentBuildState == vsBuildState.vsBuildStateInProgress))
 				{
-					Logger.Write($"Updating attribute {attribute} of project {solutionItem.Name}", LogLevel.Debug);
+					return;
+				}
+				Logger.Write($"Updating attribute {attribute} of project {solutionItem.Name}", LogLevel.Debug);
 
-					var filename = GetAssemblyInfoFilename(solutionItem);
+				var filename = GetAssemblyInfoFilename(solutionItem);
 
-					if (filename != null && File.Exists(filename))
+				if (filename == null || !File.Exists(filename))
+				{
+					return;
+				}
+				switch (solutionItem.ProjectType)
+				{
+					case LanguageType.CSharp:
+					case LanguageType.VisualBasic:
+					case LanguageType.CppManaged:
 
-					{
-						switch (solutionItem.ProjectType)
+						UpdateVersion(solutionItem,
+						              $"^[\\[<]assembly:\\s*{attribute}(Attribute)?\\s*\\(\\s*\"(?<FullVersion>\\S+\\.\\S+(\\.(?<Version>[^\"]+))?)\"\\s*\\)[\\]>]",
+						              filename,
+						              attribute);
+						break;
+					case LanguageType.CppUnmanaged:
+						if (attribute == Constants.ATTRIBUTE_ASSEMBLY_VERSION)
 						{
-							case LanguageType.CSharp:
-							case LanguageType.VisualBasic:
-							case LanguageType.CppManaged:
-
-								UpdateVersion(solutionItem,
-											  $"^[\\[<]assembly:\\s*{attribute}(Attribute)?\\s*\\(\\s*\"(?<FullVersion>\\S+\\.\\S+(\\.(?<Version>[^\"]+))?)\"\\s*\\)[\\]>]",
-											  filename,
-											  attribute);
-								break;
-							case LanguageType.CppUnmanaged:
-								if (attribute == Constants.ATTRIBUTE_ASSEMBLY_VERSION)
-								{
-									attribute = Constants.ATTRIBUTE_PRODUCT_VERSION;
-								}
-								if (attribute == Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION)
-								{
-									attribute = Constants.ATTRIBUTE_FILE_VERSION;
-								}
-
-								UpdateVersion(solutionItem,
-											  $"^[\\s]*VALUE\\ \"{attribute}\",\\ \"(?<FullVersion>\\S+[.,\\s]+\\S+[.,\\s]+\\S+[.,\\s]+[^\\s\"]+)\"",
-											  filename,
-											  attribute);
-								UpdateVersion(solutionItem,
-											  $"^[\\s]*{attribute.ToUpper()}\\ (?<FullVersion>\\S+[.,]+\\S+[.,]+\\S+[.,]+\\S+)",
-											  filename,
-											  attribute.ToUpper());
-								break;
-							case LanguageType.None:
-
-								break;
-							default:
-								throw new ArgumentOutOfRangeException();
+							attribute = Constants.ATTRIBUTE_PRODUCT_VERSION;
 						}
-					}
+						if (attribute == Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION)
+						{
+							attribute = Constants.ATTRIBUTE_FILE_VERSION;
+						}
+
+						UpdateVersion(solutionItem,
+						              $"^[\\s]*VALUE\\ \"{attribute}\",\\ \"(?<FullVersion>\\S+[.,\\s]+\\S+[.,\\s]+\\S+[.,\\s]+[^\\s\"]+)\"",
+						              filename,
+						              attribute);
+						UpdateVersion(solutionItem,
+						              $"^[\\s]*{attribute.ToUpper()}\\ (?<FullVersion>\\S+[.,]+\\S+[.,]+\\S+[.,]+\\S+)",
+						              filename,
+						              attribute.ToUpper());
+						break;
+					case LanguageType.None:
+
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 		}
@@ -654,7 +656,7 @@ namespace BuildVersionIncrement.Model
 		private void UpdateProject(SolutionItem solutionItem)
 		{
 			if (GlobalIncrementSettings.ApplySettings == GlobalIncrementSettings.ApplyGlobalSettings.Always
-				|| solutionItem.IncrementSettings.UseGlobalSettings)
+			    || solutionItem.IncrementSettings.UseGlobalSettings)
 			{
 				solutionItem.ApplyGlobalSettings();
 			}
@@ -683,22 +685,19 @@ namespace BuildVersionIncrement.Model
 				{
 					var references = (object[])solutionItem.BuildDependency.RequiredProjects;
 
-					foreach (var o in references)
+					foreach (var dep in
+						references.Select(o => SolutionItem.ConstructSolutionItem(_package, (Project)o, false))
+						          .Where(dep => dep != null))
 					{
-						var dep = SolutionItem.ConstructSolutionItem(_package, (Project)o, false);
-
-						if (dep != null)
+						try
 						{
-							try
-							{
-								UpdateProject(dep);
-							}
-							catch (Exception ex)
-							{
-								Logger.Write(
-									$"Exception occured while updating project dependency \"{dep.UniqueName}\" for \"{solutionItem.UniqueName}\".\n{ex.Message}",
-									LogLevel.Error);
-							}
+							UpdateProject(dep);
+						}
+						catch (Exception ex)
+						{
+							Logger.Write(
+								$"Exception occured while updating project dependency \"{dep.UniqueName}\" for \"{solutionItem.UniqueName}\".\n{ex.Message}",
+								LogLevel.Error);
 						}
 					}
 				}
@@ -706,7 +705,7 @@ namespace BuildVersionIncrement.Model
 			catch (Exception ex)
 			{
 				Logger.Write($"Failed updating dependencies for \"{solutionItem.UniqueName}\".\n{ex.Message}",
-							 LogLevel.Error);
+				             LogLevel.Error);
 			}
 
 			_updatedItems.Add(solutionItem.UniqueName, solutionItem);
@@ -747,9 +746,9 @@ namespace BuildVersionIncrement.Model
 		}
 
 		private void UpdateVersion(SolutionItem solutionItem,
-								   string regexPattern,
-								   string assemblyFile,
-								   string debugAttribute)
+		                           string regexPattern,
+		                           string assemblyFile,
+		                           string debugAttribute)
 		{
 			var filecontent = File.ReadAllText(assemblyFile);
 
@@ -762,7 +761,7 @@ namespace BuildVersionIncrement.Model
 				if (!m.Success)
 				{
 					Logger.Write($"Failed to locate attribute \"{debugAttribute}\" in file \"{assemblyFile}\".",
-								 LogLevel.Error);
+					             LogLevel.Error);
 					return;
 				}
 
@@ -783,101 +782,125 @@ namespace BuildVersionIncrement.Model
 					currentVersion =
 						new StringVersion(
 							Regex.Replace(m.Groups["FullVersion"].Value, $"[^\\d{sep.Groups["Separator"].Value}]+", "0")
-								 .Replace(sep.Groups["Separator"].Value, "."));
+							     .Replace(sep.Groups["Separator"].Value, "."));
 				}
 				catch (Exception ex)
 				{
-					msg = $"Error occured while parsing value of {debugAttribute} ({m.Groups["FullVersion"].Value}).\n{ex}";
+					msg =
+						$"Error occured while parsing value of {debugAttribute} ({m.Groups["FullVersion"].Value}).\n{ex}";
 
 					throw (new Exception(msg, ex));
 				}
 
 				var newVersion = solutionItem.IncrementSettings.VersioningStyle.Increment(currentVersion,
-																						  solutionItem
-																							  .IncrementSettings
-																							  .IsUniversalTime
-																							  ? _buildStartDate
-																									.ToUniversalTime()
-																							  : _buildStartDate,
-																						  solutionItem
-																							  .IncrementSettings
-																							  .StartDate,
-																						  solutionItem);
+				                                                                          solutionItem
+					                                                                          .IncrementSettings
+					                                                                          .IsUniversalTime
+					                                                                          ? _buildStartDate
+						                                                                            .ToUniversalTime()
+					                                                                          : _buildStartDate,
+				                                                                          solutionItem
+					                                                                          .IncrementSettings
+					                                                                          .StartDate,
+				                                                                          solutionItem);
 
 				if (newVersion == currentVersion)
 				{
 					return;
 				}
-				
-				var doCloseWindow = !solutionItem.DTE.ItemOperations.IsFileOpen(assemblyFile, null);
 
-				string replaceWith;
-
-				if (!solutionItem.IncrementSettings.ReplaceNonNumerics
-					&& Regex.IsMatch(m.Groups["FullVersion"].Value, $"[^\\d{sep.Groups["Separator"].Value}]+"))
+				bool success;
+				if (_package.IsCommandLine)
 				{
-					var mergedVersion =
-						m.Groups["FullVersion"].Value.Replace(sep.Groups["Separator"].Value, ".").Split('.');
+					filecontent = filecontent.Remove(m.Groups["FullVersion"].Index, m.Groups["FullVersion"].Length);
+					filecontent = filecontent.Insert(m.Groups["FullVersion"].Index, newVersion.ToString());
 
-					if (Regex.IsMatch(mergedVersion[0], "[\\d]+"))
+					try
 					{
-						mergedVersion[0] = newVersion.Major;
+						File.WriteAllText(assemblyFile, filecontent);
+						success = true;
 					}
-					if (Regex.IsMatch(mergedVersion[1], "[\\d]+"))
+					catch(Exception ex)
 					{
-						mergedVersion[1] = newVersion.Minor;
+						Logger.Write(ex.Message, LogLevel.Warn);
+						success = false;
 					}
-					if (Regex.IsMatch(mergedVersion[2], "[\\d]+"))
-					{
-						mergedVersion[2] = newVersion.Build;
-					}
-					if (Regex.IsMatch(mergedVersion[3], "[\\d]+"))
-					{
-						mergedVersion[3] = newVersion.Revision;
-					}
-
-					// ReSharper disable once CoVariantArrayConversion
-					replaceWith = m.Value.Replace(m.Groups["FullVersion"].Value,
-												  string.Format("{0}.{1}.{2}.{3}", mergedVersion)
-														.Replace(".", sep.Groups["Separator"].Value));
 				}
 				else
 				{
-					replaceWith = m.Value.Replace(m.Groups["FullVersion"].Value,
-												  newVersion.ToString(4)
+
+					var doCloseWindow = !solutionItem.DTE.ItemOperations.IsFileOpen(assemblyFile, null);
+
+					string replaceWith;
+
+					if (!solutionItem.IncrementSettings.ReplaceNonNumerics
+						&& Regex.IsMatch(m.Groups["FullVersion"].Value, $"[^\\d{sep.Groups["Separator"].Value}]+"))
+					{
+						var mergedVersion =
+							m.Groups["FullVersion"].Value.Replace(sep.Groups["Separator"].Value, ".").Split('.');
+
+						if (Regex.IsMatch(mergedVersion[0], "[\\d]+"))
+						{
+							mergedVersion[0] = newVersion.Major;
+						}
+						if (Regex.IsMatch(mergedVersion[1], "[\\d]+"))
+						{
+							mergedVersion[1] = newVersion.Minor;
+						}
+						if (Regex.IsMatch(mergedVersion[2], "[\\d]+"))
+						{
+							mergedVersion[2] = newVersion.Build;
+						}
+						if (Regex.IsMatch(mergedVersion[3], "[\\d]+"))
+						{
+							mergedVersion[3] = newVersion.Revision;
+						}
+
+						// ReSharper disable once CoVariantArrayConversion
+						replaceWith = m.Value.Replace(m.Groups["FullVersion"].Value,
+													  string.Format("{0}.{1}.{2}.{3}", mergedVersion)
 															.Replace(".", sep.Groups["Separator"].Value));
-				}
+					}
+					else
+					{
+						replaceWith = m.Value.Replace(m.Groups["FullVersion"].Value,
+													  newVersion.ToString(4)
+																.Replace(".", sep.Groups["Separator"].Value));
+					}
 
-				var projectItem = DTE.Solution.FindProjectItem(assemblyFile);
+					var projectItem = DTE.Solution.FindProjectItem(assemblyFile);
 
-				if (projectItem == null)
-				{
-					throw (new ApplicationException($"Failed to find project item \"{assemblyFile}\"."));
-				}
+					if (projectItem == null)
+					{
+						throw (new ApplicationException($"Failed to find project item \"{assemblyFile}\"."));
+					}
 
-				var window = projectItem.Open(EnvDTE.Constants.vsViewKindTextView);
+					//var doc = projectItem.Document;
 
-				if (window == null)
-				{
-					throw (new ApplicationException("Could not open project item."));
-				}
+					var window = projectItem.Open(EnvDTE.Constants.vsViewKindTextView);
 
-				var doc = window.Document;
+					if (window == null)
+					{
+						throw (new ApplicationException("Could not open project item."));
+					}
 
-				if (doc == null)
-				{
-					throw (new ApplicationException("Located project item & window but no document."));
-				}
+					var doc = window.Document;
 
-				var success = doc.ReplaceText(m.Value, replaceWith);
+					if (doc == null)
+					{
+						throw (new ApplicationException("Located project item but no document."));
+					}
 
-				if (doCloseWindow)
-				{
-					window.Close(vsSaveChanges.vsSaveChangesYes);
-				}
-				else
-				{
-					doc.Save(assemblyFile);
+					success = doc.ReplaceText(m.Value, replaceWith);
+
+					if (doCloseWindow)
+					{
+						window.Close(vsSaveChanges.vsSaveChangesYes);
+					}
+					else
+					{
+						doc.Save(assemblyFile);
+					}
 				}
 
 				msg = $"{solutionItem.Name} {debugAttribute}: {newVersion}";
@@ -890,7 +913,6 @@ namespace BuildVersionIncrement.Model
 					msg += " [FAILED]";
 				}
 				Logger.Write(msg);
-
 			}
 			catch (Exception ex)
 			{
@@ -901,9 +923,9 @@ namespace BuildVersionIncrement.Model
 #if DEBUG
 
 		public void OnBuildProjConfigBegin(string projectName,
-										   string projectConfig,
-										   string platform,
-										   string solutionConfig)
+		                                   string projectConfig,
+		                                   string platform,
+		                                   string solutionConfig)
 		{
 			try
 			{
@@ -914,7 +936,7 @@ namespace BuildVersionIncrement.Model
 			catch (Exception ex)
 			{
 				Logger.Write($"Error occured while updating build version of project {projectName}\n{ex}",
-							 LogLevel.Error);
+				             LogLevel.Error);
 			}
 		}
 

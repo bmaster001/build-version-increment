@@ -26,11 +26,17 @@ namespace BuildVersionIncrement.Logging
 	using System.Text;
 
 	using log4net;
+	using log4net.Appender;
+	using log4net.Core;
+	using log4net.Layout;
+	using log4net.Repository.Hierarchy;
 
 	using Properties;
 
 	public class Logger
 	{
+		private const string LOG_PATTERN = "%utcdate UTC %-6level%logger - %message%newline";
+
 		private static readonly ILog _log =
 			LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -38,20 +44,56 @@ namespace BuildVersionIncrement.Logging
 
 		internal static event EventHandler<WriteEventArgs> WriteEvent;
 
-		internal Logger()
+		private Logger(bool isCommandLine)
 		{
-			Instance = this;
+			var hierarchy = (Hierarchy)LogManager.GetRepository();
+
+			var activityLogAppender = new ActivityLogAppender();
+			var outputWindowAppender = new OutputWindowAppender();
+			
+
+			var layout = new PatternLayout { ConversionPattern = LOG_PATTERN };
+			layout.ActivateOptions();
+
+			activityLogAppender.Layout = layout;
+			activityLogAppender.Threshold = Level.Debug;
+
+			activityLogAppender.ActivateOptions();
+			hierarchy.Root.AddAppender(activityLogAppender);
+
+			outputWindowAppender.Layout = layout;
+			outputWindowAppender.Threshold = Level.Info;
+
+			outputWindowAppender.ActivateOptions();
+			hierarchy.Root.AddAppender(outputWindowAppender);
+
+			if (isCommandLine)
+			{
+				// ReSharper disable once UseObjectOrCollectionInitializer
+				var consoleAppender = new ConsoleAppender {Layout = layout};
+#if DEBUG
+				consoleAppender.Threshold = Level.Debug;
+#else
+				consoleAppender.Threshold = Level.Info;
+#endif
+				hierarchy.Root.AddAppender(consoleAppender);
+			}
+			
+			hierarchy.Root.Level = Level.All;
+			hierarchy.Configured = true;
+			_layout.ActivateOptions();
 		}
 
 		public static Logger Instance { get; private set; }
 
 		internal string Contents => _contents.ToString();
 
+		// ReSharper disable once InconsistentNaming
+		private static PatternLayout _layout => new PatternLayout {ConversionPattern = LOG_PATTERN};
+
 		public static void Write(string message, LogLevel logLevel = LogLevel.Info)
 		{
-			var globalLogLevel = Settings.Default.IsVerboseLogEnabled
-				                     ? LogLevel.Debug
-				                     : LogLevel.Info;
+			var globalLogLevel = Settings.Default.IsVerboseLogEnabled ? LogLevel.Debug : LogLevel.Info;
 
 			if (globalLogLevel > logLevel)
 			{
@@ -59,6 +101,7 @@ namespace BuildVersionIncrement.Logging
 			}
 
 			WriteEvent?.Invoke(Instance, new WriteEventArgs(message, logLevel));
+			Instance._contents.Append(message);
 
 			switch (logLevel)
 			{
@@ -95,6 +138,11 @@ namespace BuildVersionIncrement.Logging
 				default:
 					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
 			}
+		}
+
+		internal static void Initialise(bool isCommandLine)
+		{
+			Instance = new Logger(isCommandLine);
 		}
 
 		internal class WriteEventArgs : EventArgs

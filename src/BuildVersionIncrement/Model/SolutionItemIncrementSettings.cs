@@ -50,7 +50,7 @@ namespace BuildVersionIncrement.Model
 			+ "You can use this at solution level if you make use of file links in your projects.")]
 		[DefaultValue("")]
 		[DisplayName("Assembly Info Filename")]
-		[Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+		[Editor(typeof(FilePickerEditor), typeof(FilePickerEditor))]
 		public string AssemblyInfoFilename
 		{
 			get { return _assemblyInfoFilename; }

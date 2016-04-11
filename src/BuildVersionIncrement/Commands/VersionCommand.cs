@@ -24,9 +24,13 @@ namespace BuildVersionIncrement.Commands
 	using System;
 	using System.ComponentModel.Design;
 
+	using EnvDTE;
+
 	using Logging;
 
 	using Microsoft.VisualStudio.Shell;
+
+	using Constants = BuildVersionIncrement.Constants;
 
 	internal sealed class VersionCommand : SolutionDependantCommandBase
 	{
@@ -46,6 +50,9 @@ namespace BuildVersionIncrement.Commands
 			return new OleMenuCommand(ManuallyVersionAssemblies, menuCommandId);
 		}
 
-		private static void ManuallyVersionAssemblies(object sender, EventArgs e) {}
+		private static void ManuallyVersionAssemblies(object sender, EventArgs e)
+		{
+			BuildVersionIncrementor.Instance.OnBuildBegin(vsBuildScope.vsBuildScopeSolution, vsBuildAction.vsBuildActionBuild);
+		}
 	}
 }

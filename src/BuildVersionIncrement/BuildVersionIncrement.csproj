@@ -52,7 +52,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Model\BuildActionType.cs" />
-    <Compile Include="Model\BuildVersionIncrementor.cs" />
+    <Compile Include="BuildVersionIncrementor.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Model\ConfigurationStringConverter.cs" />
     <Compile Include="Constants.cs" />
@@ -83,6 +83,9 @@
     <Compile Include="Model\SolutionItemIncrementSettings.cs" />
     <Compile Include="Model\SolutionItemType.cs" />
     <Compile Include="UI\DatePickerEditor.cs" />
+    <Compile Include="UI\FilePickerEditor.xaml.cs">
+      <DependentUpon>FilePickerEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\IncrementorItemsSource.cs" />
     <Compile Include="UI\ProjectKindItemsSource.cs" />
     <Compile Include="User32.cs" />
@@ -114,9 +117,6 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="Key.snk" />
-    <Content Include="log4net.config">
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -282,6 +282,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\FilePickerEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\SettingsDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -297,6 +301,11 @@
     <Error Condition="!Exists('..\packages\Microsoft.VSSDK.BuildTools.14.2.25123\build\Microsoft.VSSDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.VSSDK.BuildTools.14.2.25123\build\Microsoft.VSSDK.BuildTools.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.VSSDK.BuildTools.14.2.25123\build\Microsoft.VSSDK.BuildTools.targets" Condition="Exists('..\packages\Microsoft.VSSDK.BuildTools.14.2.25123\build\Microsoft.VSSDK.BuildTools.targets')" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties BuildVersion_StartDate="2000/1/1" BuildVersion_BuildVersioningStyle="None.None.DeltaBaseDateInDays.TimeStamp" BuildVersion_UpdateFileVersion="True" BuildVersion_AssemblyInfoFilename="Properties\AssemblyInfo.cs" />
+    </VisualStudio>
+  </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

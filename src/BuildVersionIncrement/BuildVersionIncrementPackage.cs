@@ -22,7 +22,6 @@
 namespace BuildVersionIncrement
 {
 	using System.Diagnostics.CodeAnalysis;
-	using System.IO;
 	using System.Runtime.InteropServices;
 
 	using Commands;
@@ -30,14 +29,11 @@ namespace BuildVersionIncrement
 	using EnvDTE;
 
 	using log4net;
-	using log4net.Config;
 
 	using Logging;
 
 	using Microsoft.VisualStudio.Shell;
 	using Microsoft.VisualStudio.Shell.Interop;
-
-	using Model;
 
 	[PackageRegistration(UseManagedResourcesOnly = true)]
 	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
@@ -49,35 +45,51 @@ namespace BuildVersionIncrement
 		"SA1650:ElementDocumentationMustBeSpelledCorrectly",
 		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
 	[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+	[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+	[ProvideAppCommandLine("IncrementVersion", typeof(BuildVersionIncrementPackage), Arguments = "0", DemandLoad = 1, PackageGuid = PackageGuidString)]
 	public sealed class BuildVersionIncrementPackage : Package
 	{
 		public const string PackageGuidString = "d9498ed1-f738-4c84-9cbc-82ab0163d742";
-
-		private Logger _logger;
-		private BuildVersionIncrementor _buildVersionIncrementor;
 		private BuildEvents _buildEvents;
+		private BuildVersionIncrementor _buildVersionIncrementor;
 
 		private DTE DTE => (DTE)GetService(typeof(DTE));
-
-		#region Package Members
+		internal bool IsCommandLine { get; set; }
 
 		protected override void Initialize()
 		{
-			XmlConfigurator.Configure(new FileInfo("log4net.config"));
 			GlobalContext.Properties["package"] = this;
+			CheckCommandLine();
+			Logger.Initialise(IsCommandLine);
 			SettingsCommand.Initialize(this);
 			VersionCommand.Initialize(this);
 
-			_logger = new Logger();
 			_buildVersionIncrementor = new BuildVersionIncrementor(this);
 			_buildEvents = DTE.Events.BuildEvents;
 			_buildVersionIncrementor.InitializeIncrementors();
 
-			base.Initialize();
+			_buildEvents.OnBuildBegin += _buildVersionIncrementor.OnBuildBegin;
+			_buildEvents.OnBuildDone += _buildVersionIncrementor.OnBuildDone;
 
 			
+
+			base.Initialize();
 		}
 
-		#endregion
+		private void CheckCommandLine()
+		{
+			var commandLine = (IVsAppCommandLine)GetService(typeof(IVsAppCommandLine));
+
+			var isPresent = 0;
+
+			if (commandLine != null)
+			{
+				string optionValue;
+				commandLine.GetOption("IncrementVersion", out isPresent, out optionValue);
+			}
+
+			IsCommandLine = isPresent != 0;
+		}
+		
 	}
 }

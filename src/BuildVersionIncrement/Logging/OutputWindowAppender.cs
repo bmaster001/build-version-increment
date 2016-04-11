@@ -32,8 +32,6 @@ namespace BuildVersionIncrement.Logging
 	using log4net.Appender;
 	using log4net.Core;
 
-	using Microsoft.VisualStudio.Shell;
-
 	public class OutputWindowAppender : AppenderSkeleton
 	{
 		public OutputWindowAppender()
@@ -66,13 +64,7 @@ namespace BuildVersionIncrement.Logging
 						priority = vsTaskPriority.vsTaskPriorityMedium;
 						icon = vsTaskIcon.vsTaskIconSquiggle;
 					}
-					pane.OutputTaskItemString(message,
-											  priority,
-											  "BuildVersionIncrement",
-											  icon,
-											  null,
-											  0,
-											  message);
+					pane.OutputTaskItemString(message, priority, "BuildVersionIncrement", icon, null, 0, message);
 					errorList.Parent.Activate();
 				}
 				return;
