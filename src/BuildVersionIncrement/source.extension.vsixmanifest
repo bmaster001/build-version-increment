@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 	<Metadata>
-		<Identity Id="BuildVersionIncrement.Paul J. Melia.b6333286-c1fd-4154-b643-0210a408c7b8" Version="1.0.5945.1403" Language="en-US" Publisher="Paul J. Melia" />
+		<Identity Id="BuildVersionIncrement.Paul J. Melia.b6333286-c1fd-4154-b643-0210a408c7b8" Version="1.0.5949.0948" Language="en-US" Publisher="Paul J. Melia" />
 		<DisplayName>Build Version Increment Add-in (VS2015)</DisplayName>
 		<Description xml:space="preserve">Based on http://autobuildversion.codeplex.com/, this extension increments the version of an assembly or assemblies based on the specified configuration.</Description>
 	</Metadata>

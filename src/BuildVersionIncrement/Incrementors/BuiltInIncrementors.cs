@@ -40,7 +40,7 @@ namespace BuildVersionIncrement.Incrementors
 
 			internal override string IncrementImpl(string value, DateTime buildStart, DateTime projectStart)
 			{
-				return buildStart.Day.ToString();
+				return $"{buildStart.Day:00}";
 			}
 		}
 
@@ -133,7 +133,7 @@ namespace BuildVersionIncrement.Incrementors
 
 			internal override string IncrementImpl(string value, DateTime buildStart, DateTime projectStart)
 			{
-				return buildStart.Month.ToString();
+				return $"{buildStart.Month:00}";
 			}
 		}
 
