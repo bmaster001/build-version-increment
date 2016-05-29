@@ -101,7 +101,7 @@ namespace BuildVersionIncrement.Logging
 			}
 
 			WriteEvent?.Invoke(Instance, new WriteEventArgs(message, logLevel));
-			Instance._contents.Append(message);
+			Instance._contents.AppendLine(message);
 
 			switch (logLevel)
 			{
