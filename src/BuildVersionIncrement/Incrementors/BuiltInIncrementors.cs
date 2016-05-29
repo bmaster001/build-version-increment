@@ -33,6 +33,10 @@ namespace BuildVersionIncrement.Incrementors
 
 		public static YearStampIncrementor YearStamp => new YearStampIncrementor();
 
+		public static YearMonthStampIncrementor YearMonthStamp => new YearMonthStampIncrementor();
+		public static YearMonthDayStampIncrementor YearMonthDayStamp => new YearMonthDayStampIncrementor();
+
+
 		internal class DayStampIncrementor : BuiltInIncrementorBase
 		{
 			public override string Description => "Day stamp (dd)";
@@ -197,6 +201,32 @@ namespace BuildVersionIncrement.Incrementors
 				return yearDecade;
 			}
 		}
+
+		internal class YearMonthDayStampIncrementor : BuiltInIncrementorBase
+		{
+			public override string Description => "Year month day stamp (yymmdd)";
+			public override string Name => "YearMonthDayStamp";
+
+			internal override string IncrementImpl(string value, DateTime buildStart, DateTime projectStart)
+			{
+				var yearDecade = buildStart.ToString("yy");
+				return $"{yearDecade}{buildStart.Month:00}{buildStart.Day:00}";
+			}
+		}
+
+		internal class YearMonthStampIncrementor: BuiltInIncrementorBase
+		{
+			public override string Description => "Year month stamp (yymm)";
+			public override string Name => "YearMonthStamp";
+
+			internal override string IncrementImpl(string value, DateTime buildStart, DateTime projectStart)
+			{
+				var yearDecade = buildStart.ToString("yy");
+				return $"{yearDecade}{buildStart.Month:00}";
+			}
+		}
+
+
 
 		internal class YearStampIncrementor : BuiltInIncrementorBase
 		{
