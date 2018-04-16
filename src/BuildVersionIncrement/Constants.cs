@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsCommand.cs
+// Module Name: Constants.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -21,54 +21,28 @@
 
 namespace BuildVersionIncrement
 {
-	using System;
-	using System.ComponentModel.Design;
+	using Xceed.Wpf.DataGrid;
 
-	using Microsoft.VisualStudio;
-	using Microsoft.VisualStudio.Shell;
-	using Microsoft.VisualStudio.Shell.Interop;
-
-	internal sealed class SettingsCommand
+	public class Constants
 	{
-		public const int CommandId = 0x0100;
+		public const int COMMAND_ID_SETTINGS = 0x0100;
+		public const int COMMAND_ID_VERSION = 0x0200;
+		public const string COMMAND_SET = "1a42bbb0-f5ad-4882-bf32-623425c6d577";
 
-		public static readonly Guid CommandSet = new Guid("1a42bbb0-f5ad-4882-bf32-623425c6d577");
+		public const string PROPERTY_LOCAL_PATH = "LocalPath";
+		public const string PROPERTY_DATE_MODIFIED = "DateModified";
+		public const string PROPERTY_FULL_PATH = "FullPath";
+		public const string PROPERTY_OUTPUT_FILE_NAME = "OutputFileName";
+		public const string PROPERTY_OUTPUT_PATH = "OutputPath";
+		public const string PROPERTY_PROJECT = "project";
 
-		private readonly Package package;
+		public const string MEMBER_CONFIGURATIONS = "Configurations";
+		public const string MEMBER_ITEM = "Item";
+		public const string MEMBER_PRIMARY_OUTPUT = "PrimaryOutput";
 
-		private SettingsCommand(Package package)
-		{
-			if (package == null)
-			{
-				throw new ArgumentNullException(nameof(package));
-			}
-
-			this.package = package;
-
-			var commandService =
-				ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-			if (commandService == null)
-			{
-				return;
-			}
-			var menuCommandId = new CommandID(CommandSet, CommandId);
-			var menuItem = new MenuCommand(ShowSettingsDialog, menuCommandId);
-			commandService.AddCommand(menuItem);
-		}
-
-		public static SettingsCommand Instance { get; private set; }
-
-		private IServiceProvider ServiceProvider => package;
-
-		public static void Initialize(Package package)
-		{
-			Instance = new SettingsCommand(package);
-		}
-
-		private void ShowSettingsDialog(object sender, EventArgs e)
-		{
-			var dialog = new SettingsDialog();
-			dialog.ShowModal();
-		}
+		public const string ATTRIBUTE_ASSEMBLY_VERSION = "AssemblyVersion";
+		public const string ATTRIBUTE_ASSEMBLY_FILE_VERSION = "AssemblyFileVersion";
+		public const string ATTRIBUTE_PRODUCT_VERSION = "ProductVersion";
+		public const string ATTRIBUTE_FILE_VERSION = "FileVersion";
 	}
 }

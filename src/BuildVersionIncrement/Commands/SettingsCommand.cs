@@ -1,6 +1,6 @@
 ﻿// ----------------------------------------------------------------------
 // Project:     BuildVersionIncrement
-// Module Name: SettingsDialog.xaml.cs
+// Module Name: SettingsCommand.cs
 // ----------------------------------------------------------------------
 // Created and maintained by Paul J. Melia.
 // Copyright © 2016 Paul J. Melia.
@@ -19,20 +19,42 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
-namespace BuildVersionIncrement
+namespace BuildVersionIncrement.Commands
 {
-	/// <summary>
-	///     Interaction logic for SettingsDialog.xaml
-	/// </summary>
-	public partial class SettingsDialog
-	{
-		internal SettingsDialog()
-		{
-			InitializeComponent();
-			HasMaximizeButton = true;
-			HasMinimizeButton = true;
-			ShowInTaskbar = false;
+	using System;
+	using System.ComponentModel.Design;
 
+	using Microsoft.VisualStudio.Shell;
+
+	using UI;
+
+	internal sealed class SettingsCommand : MenuCommandBase<MenuCommand>
+	{
+		private readonly Package _package;
+
+		private SettingsCommand(Package package) : base(package)
+		{
+			_package = package;
+		}
+
+		public static SettingsCommand Instance { get; private set; }
+
+		public override int CommandId => Constants.COMMAND_ID_SETTINGS;
+
+		public static void Initialize(Package package)
+		{
+			Instance = new SettingsCommand(package);
+		}
+
+		protected override MenuCommand GetCommand(CommandID menuCommandId)
+		{
+			return new MenuCommand(ShowSettingsDialog, menuCommandId);
+		}
+
+		private void ShowSettingsDialog(object sender, EventArgs e)
+		{
+			var dialog = new SettingsDialog(_package);
+			dialog.ShowModal();
 		}
 	}
 }

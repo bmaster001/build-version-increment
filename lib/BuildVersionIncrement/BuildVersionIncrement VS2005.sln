@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildVersionIncrement", "BuildVersionIncrement\BuildVersionIncrement.csproj", "{0D460423-5FA9-4B84-A2BE-CC9389D77008}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug CommandLine|Any CPU = Debug CommandLine|Any CPU
+		Debug VS2005|Any CPU = Debug VS2005|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Install|Any CPU = Install|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug CommandLine|Any CPU.ActiveCfg = Debug CommandLine|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug CommandLine|Any CPU.Build.0 = Debug CommandLine|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug VS2005|Any CPU.ActiveCfg = Debug VS2005|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug VS2005|Any CPU.Build.0 = Debug VS2005|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Install|Any CPU.ActiveCfg = Install|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Install|Any CPU.Build.0 = Install|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D460423-5FA9-4B84-A2BE-CC9389D77008}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

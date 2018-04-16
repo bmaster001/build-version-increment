@@ -72,6 +72,8 @@
 			</Button>
 			<Button guid="guidBuildVersionIncrementPackageCmdSet" id="cmdidVersionCommand" priority="0x0200" type="Button">
 				<Parent guid="guidBuildVersionIncrementPackageCmdSet" id="SubMenuGroup" />
+				<CommandFlag>DefaultInvisible</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
 				<Strings>
 					<ButtonText>Version Assemblies</ButtonText>
 				</Strings>
