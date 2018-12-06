@@ -110,7 +110,15 @@ namespace BuildVersionIncrement.UI
 		private static ImageSource FolderOpen => IconReader.AddFolderIcon(FolderType.Open).ToImageSource()
 			;
 
-		private DTE DTE => (DTE)ServiceProvider.GetService(typeof(DTE));
+		private DTE DTE
+		{
+			get
+			{
+				Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+				return (DTE)ServiceProvider.GetService(typeof(DTE));
+			}
+		}
+
 		private IServiceProvider ServiceProvider => _package;
 
 		private static void CopySettingsToAll(SolutionItem item, IncrementSettingsBase settings)
@@ -182,6 +190,7 @@ namespace BuildVersionIncrement.UI
 
 		private void DialogWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			try
 			{
 				_globalSettings.Load();
@@ -207,6 +216,7 @@ namespace BuildVersionIncrement.UI
 		{
 			try
 			{
+				ThreadHelper.ThrowIfNotOnUIThread();
 				if (DTE.Solution == null || !DTE.Solution.IsOpen)
 				{
 					SolutionSetttingsTab.IsEnabled = false;
@@ -236,6 +246,7 @@ namespace BuildVersionIncrement.UI
 
 		private void Okay_Click(object sender, RoutedEventArgs e)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			if (_globalSettings.Apply == GlobalIncrementSettings.ApplyGlobalSettings.Always)
 			{
 				MessageBox.Show(

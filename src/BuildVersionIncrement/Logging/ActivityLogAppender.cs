@@ -20,6 +20,7 @@ namespace BuildVersionIncrement.Logging
 
 		protected override void Append(LoggingEvent loggingEvent)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			var log = ServiceProvider.GetService(typeof(IVsActivityLog)) as IVsActivityLog; 
 
 			if (log == null)

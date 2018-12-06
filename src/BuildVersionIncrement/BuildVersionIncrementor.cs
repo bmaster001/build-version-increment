@@ -30,7 +30,7 @@ namespace BuildVersionIncrement
 	using System.Reflection;
 	using System.Text;
 	using System.Text.RegularExpressions;
-
+	using System.Threading.Tasks;
 	using EnvDTE;
 
 	using Incrementors;
@@ -38,7 +38,7 @@ namespace BuildVersionIncrement
 	using Logging;
 
 	using Microsoft.VisualStudio;
-
+	using Microsoft.VisualStudio.Shell;
 	using Model;
 
 	using Properties;
@@ -72,9 +72,20 @@ namespace BuildVersionIncrement
 
 		public IncrementorCollection Incrementors { get; } = new IncrementorCollection();
 
-		private DTE DTE => (DTE)ServiceProvider.GetService(typeof(DTE));
+		private async Task<DTE> GetDTEAsync()
+		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+			var obj = await ServiceProvider.GetServiceAsync(typeof(DTE));
+			return (DTE)obj;
+		}
 
-		private IServiceProvider ServiceProvider => _package;
+		private AsyncPackage ServiceProvider
+		{
+			get
+			{
+				return _package;
+			}
+		}
 
 		public void InitializeIncrementors()
 		{
@@ -101,8 +112,9 @@ namespace BuildVersionIncrement
 			}
 		}
 
-		public void OnBuildBegin(vsBuildScope scope, vsBuildAction action)
+		public async System.Threading.Tasks.Task OnBuildBeginAsync(vsBuildScope scope, vsBuildAction action)
 		{
+			
 			Logger.Write($"BuildEvents_OnBuildBegin scope: {scope} action {action}", LogLevel.Debug);
 
 			_currentBuildState = vsBuildState.vsBuildStateInProgress;
@@ -110,16 +122,16 @@ namespace BuildVersionIncrement
 			_currentBuildScope = scope;
 			_buildStartDate = DateTime.Now;
 
-			ExecuteIncrement();
+			await ExecuteIncrementAsync();
 			_updatedItems.Clear();
 		}
 
-		public void OnBuildDone(vsBuildScope scope, vsBuildAction action)
-		{
+		public async System.Threading.Tasks.Task OnBuildDoneAsync(vsBuildScope scope, vsBuildAction action)
+		{			
 			Logger.Write($"BuildEvents_OnBuildDone scope: {scope} action {action}", LogLevel.Debug);
 			_currentBuildState = vsBuildState.vsBuildStateDone;
 
-			ExecuteIncrement();
+			await ExecuteIncrementAsync();
 			_updatedItems.Clear();
 			ClearSolutionItemAndFileDateCache();
 		}
@@ -128,6 +140,7 @@ namespace BuildVersionIncrement
 		{
 			try
 			{
+				ThreadHelper.ThrowIfNotOnUIThread();
 				if (solutionItem.ItemType == SolutionItemType.Folder)
 				{
 					return false;
@@ -180,6 +193,7 @@ namespace BuildVersionIncrement
 
 		private static bool CheckProjectItem(ProjectItem item, DateTime outputFileDate)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var itemFileDate = DateTime.MinValue;
 			if (PropertyExists(item.Properties, Constants.PROPERTY_LOCAL_PATH))
 			{
@@ -254,6 +268,7 @@ namespace BuildVersionIncrement
 
 		private static void PrepareSolutionItem(SolutionItem solutionItem)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			if (solutionItem.ProjectType != LanguageType.None)
 			{
 				return;
@@ -285,11 +300,13 @@ namespace BuildVersionIncrement
 
 		private static bool PropertyExists(IEnumerable properties, string propertyName)
 		{
-			return properties.Cast<Property>().Any(item => item.Name == propertyName);
+			ThreadHelper.ThrowIfNotOnUIThread();
+			return properties.Cast<Property>().Any(item => { ThreadHelper.ThrowIfNotOnUIThread(); return item.Name == propertyName; });
 		}
 
-		private void ExecuteIncrement()
+		private async System.Threading.Tasks.Task ExecuteIncrementAsync()
 		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			if (!Settings.Default.IsEnabled)
 			{
 				Logger.Write("BuildVersionIncrement disabled.");
@@ -297,6 +314,7 @@ namespace BuildVersionIncrement
 			}
 			try
 			{
+				var dte = await GetDTEAsync();
 				if (_currentBuildAction != vsBuildAction.vsBuildActionBuild
 				    && _currentBuildAction != vsBuildAction.vsBuildActionRebuildAll)
 				{
@@ -304,13 +322,13 @@ namespace BuildVersionIncrement
 				}
 				if (_currentBuildScope == vsBuildScope.vsBuildScopeSolution)
 				{
-					var solution = DTE.Solution;
+					var solution = dte.Solution;
 					var solutionItem = new SolutionItem(_package, solution, true);
-					UpdateRecursive(solutionItem);
+					await UpdateRecursiveAsync(solutionItem);
 				}
 				else
 				{
-					var projects = (Array)DTE.ActiveSolutionProjects;
+					var projects = (Array)dte.ActiveSolutionProjects;
 					foreach (var solutionItem in from Project p in projects
 					                             select SolutionItem.ConstructSolutionItem(_package, p, false)
 					                             into solutionItem
@@ -318,7 +336,7 @@ namespace BuildVersionIncrement
 					                             where IsSolutionItemModified(solutionItem)
 					                             select solutionItem)
 					{
-						UpdateProject(solutionItem);
+						await UpdateProjectAsync(solutionItem);
 					}
 				}
 
@@ -333,6 +351,7 @@ namespace BuildVersionIncrement
 
 		private string GetAssemblyInfoFilename(SolutionItem solutionItem)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var filename = "AssemblyInfo";
 			var ext = Path.GetExtension(solutionItem.Filename);
 
@@ -434,6 +453,7 @@ namespace BuildVersionIncrement
 
 		private bool IsProjectModified(Project project)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			try
 			{
 				Logger.Write($"Checking project '{project.Name}'...", LogLevel.Debug);
@@ -530,6 +550,7 @@ namespace BuildVersionIncrement
 
 		private bool IsSolutionItemModified(SolutionItem solutionItem)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var key = $"{solutionItem.ItemType}:{solutionItem.Name}";
 			if (_solutionItemCache.ContainsKey(key))
 			{
@@ -593,8 +614,9 @@ namespace BuildVersionIncrement
 			return true;
 		}
 
-		private void Update(SolutionItem solutionItem, string attribute)
+		private async System.Threading.Tasks.Task UpdateAsync(SolutionItem solutionItem, string attribute)
 		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			if (solutionItem.IncrementSettings.BuildAction == BuildActionType.Both
 			    || (solutionItem.IncrementSettings.BuildAction == BuildActionType.Build
 			        && _currentBuildAction == vsBuildAction.vsBuildActionBuild)
@@ -620,7 +642,7 @@ namespace BuildVersionIncrement
 					case LanguageType.VisualBasic:
 					case LanguageType.CppManaged:
 
-						UpdateVersion(solutionItem,
+						await UpdateVersionAsync(solutionItem,
 						              $"^[\\[<]assembly:\\s*{attribute}(Attribute)?\\s*\\(\\s*\"(?<FullVersion>\\S+\\.\\S+(\\.(?<Version>[^\"]+))?)\"\\s*\\)[\\]>]",
 						              filename,
 						              attribute);
@@ -635,11 +657,11 @@ namespace BuildVersionIncrement
 							attribute = Constants.ATTRIBUTE_FILE_VERSION;
 						}
 
-						UpdateVersion(solutionItem,
+						await UpdateVersionAsync(solutionItem,
 						              $"^[\\s]*VALUE\\ \"{attribute}\",\\ \"(?<FullVersion>\\S+[.,\\s]+\\S+[.,\\s]+\\S+[.,\\s]+[^\\s\"]+)\"",
 						              filename,
 						              attribute);
-						UpdateVersion(solutionItem,
+						await UpdateVersionAsync(solutionItem,
 						              $"^[\\s]*{attribute.ToUpper()}\\ (?<FullVersion>\\S+[.,]+\\S+[.,]+\\S+[.,]+\\S+)",
 						              filename,
 						              attribute.ToUpper());
@@ -653,8 +675,9 @@ namespace BuildVersionIncrement
 			}
 		}
 
-		private void UpdateProject(SolutionItem solutionItem)
+		private async System.Threading.Tasks.Task UpdateProjectAsync(SolutionItem solutionItem)
 		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			if (GlobalIncrementSettings.ApplySettings == GlobalIncrementSettings.ApplyGlobalSettings.Always
 			    || solutionItem.IncrementSettings.UseGlobalSettings)
 			{
@@ -670,12 +693,12 @@ namespace BuildVersionIncrement
 			{
 				if (solutionItem.IncrementSettings.AutoUpdateAssemblyVersion)
 				{
-					Update(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_VERSION);
+					await UpdateAsync(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_VERSION);
 				}
 
 				if (solutionItem.IncrementSettings.AutoUpdateFileVersion)
 				{
-					Update(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION);
+					await UpdateAsync(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION);
 				}
 			}
 
@@ -686,12 +709,12 @@ namespace BuildVersionIncrement
 					var references = (object[])solutionItem.BuildDependency.RequiredProjects;
 
 					foreach (var dep in
-						references.Select(o => SolutionItem.ConstructSolutionItem(_package, (Project)o, false))
+						references.Select(o => { ThreadHelper.ThrowIfNotOnUIThread(); return SolutionItem.ConstructSolutionItem(_package, (Project)o, false); })
 						          .Where(dep => dep != null))
 					{
 						try
 						{
-							UpdateProject(dep);
+							await UpdateProjectAsync(dep);
 						}
 						catch (Exception ex)
 						{
@@ -711,8 +734,10 @@ namespace BuildVersionIncrement
 			_updatedItems.Add(solutionItem.UniqueName, solutionItem);
 		}
 
-		private void UpdateRecursive(SolutionItem solutionItem)
+		private async System.Threading.Tasks.Task UpdateRecursiveAsync(SolutionItem solutionItem)
 		{
+
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			try
 			{
 				if (!IsSolutionItemModified(solutionItem))
@@ -727,11 +752,11 @@ namespace BuildVersionIncrement
 				{
 					if (solutionItem.IncrementSettings.AutoUpdateAssemblyVersion)
 					{
-						Update(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_VERSION);
+						await UpdateAsync(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_VERSION);
 					}
 					if (solutionItem.IncrementSettings.AutoUpdateFileVersion)
 					{
-						Update(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION);
+						await UpdateAsync(solutionItem, Constants.ATTRIBUTE_ASSEMBLY_FILE_VERSION);
 					}
 				}
 			}
@@ -741,15 +766,16 @@ namespace BuildVersionIncrement
 			}
 			foreach (var child in solutionItem.SubItems)
 			{
-				UpdateRecursive(child);
+				await UpdateRecursiveAsync(child);
 			}
 		}
 
-		private void UpdateVersion(SolutionItem solutionItem,
+		private async System.Threading.Tasks.Task UpdateVersionAsync(SolutionItem solutionItem,
 		                           string regexPattern,
 		                           string assemblyFile,
 		                           string debugAttribute)
 		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			var filecontent = File.ReadAllText(assemblyFile);
 
 			try
@@ -868,7 +894,8 @@ namespace BuildVersionIncrement
 																.Replace(".", sep.Groups["Separator"].Value));
 					}
 
-					var projectItem = DTE.Solution.FindProjectItem(assemblyFile);
+					var dte = await GetDTEAsync();
+					var projectItem = dte.Solution.FindProjectItem(assemblyFile);
 
 					if (projectItem == null)
 					{
@@ -922,14 +949,16 @@ namespace BuildVersionIncrement
 
 #if DEBUG
 
-		public void OnBuildProjConfigBegin(string projectName,
+		public async System.Threading.Tasks.Task OnBuildProjConfigBegin(string projectName,
 		                                   string projectConfig,
 		                                   string platform,
 		                                   string solutionConfig)
 		{
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 			try
 			{
-				var p = DTE.Solution.Projects.Item(projectName);
+				var dte = await GetDTEAsync();
+				var p = dte.Solution.Projects.Item(projectName);
 
 				Logger.Write(DumpProperties(p.Properties), LogLevel.Debug);
 			}
@@ -942,6 +971,7 @@ namespace BuildVersionIncrement
 
 		private string DumpProperties(IEnumerable props)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var sb = new StringBuilder();
 
 			foreach (Property prop in props)

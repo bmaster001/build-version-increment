@@ -21,9 +21,11 @@
 
 namespace BuildVersionIncrement
 {
+	using System;
 	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.InteropServices;
-
+	using System.Threading;
+	using System.Threading.Tasks;
 	using Commands;
 
 	using EnvDTE;
@@ -35,7 +37,7 @@ namespace BuildVersionIncrement
 	using Microsoft.VisualStudio.Shell;
 	using Microsoft.VisualStudio.Shell.Interop;
 
-	[PackageRegistration(UseManagedResourcesOnly = true)]
+	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
 
 	// Info on this package for Help/About
@@ -43,21 +45,31 @@ namespace BuildVersionIncrement
 	[Guid(PackageGuidString)]
 	[SuppressMessage("StyleCop.CSharp.DocumentationRules",
 		"SA1650:ElementDocumentationMustBeSpelledCorrectly",
-		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-	[ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-	[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+		Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]	
 	[ProvideAppCommandLine("IncrementVersion", typeof(BuildVersionIncrementPackage), Arguments = "0", DemandLoad = 1, PackageGuid = PackageGuidString)]
-	public sealed class BuildVersionIncrementPackage : Package
+	public sealed class BuildVersionIncrementPackage : AsyncPackage
 	{
 		public const string PackageGuidString = "d9498ed1-f738-4c84-9cbc-82ab0163d742";
 		private BuildEvents _buildEvents;
 		private BuildVersionIncrementor _buildVersionIncrementor;
 
-		private DTE DTE => (DTE)GetService(typeof(DTE));
+		private DTE DTE
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return (DTE)GetService(typeof(DTE));
+			}
+		}
+
 		internal bool IsCommandLine { get; set; }
 
-		protected override void Initialize()
+		protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 		{
+			await base.InitializeAsync(cancellationToken, progress);
+
+			await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
 			GlobalContext.Properties["package"] = this;
 			CheckCommandLine();
 			Logger.Initialise(IsCommandLine);
@@ -68,16 +80,15 @@ namespace BuildVersionIncrement
 			_buildEvents = DTE.Events.BuildEvents;
 			_buildVersionIncrementor.InitializeIncrementors();
 
-			_buildEvents.OnBuildBegin += _buildVersionIncrementor.OnBuildBegin;
-			_buildEvents.OnBuildDone += _buildVersionIncrementor.OnBuildDone;
-
-			
-
-			base.Initialize();
+#pragma warning disable VSTHRD101 // Avoid unsupported async delegates
+			_buildEvents.OnBuildBegin += async (s, e) => await _buildVersionIncrementor.OnBuildBeginAsync(s, e);
+			_buildEvents.OnBuildDone += async (s, e) => await _buildVersionIncrementor.OnBuildDoneAsync(s, e);
+#pragma warning restore VSTHRD101 // Avoid unsupported async delegates
 		}
 
 		private void CheckCommandLine()
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var commandLine = (IVsAppCommandLine)GetService(typeof(IVsAppCommandLine));
 
 			var isPresent = 0;

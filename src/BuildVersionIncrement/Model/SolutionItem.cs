@@ -49,24 +49,15 @@ namespace BuildVersionIncrement.Model
 		private bool _isExpanded;
 		private bool _isSelected;
 
-		public SolutionItem(Package package, Solution solution) : this(package, solution, true) {}
+		public SolutionItem(Package package, Solution solution) : this(package, solution, true) { }
 
 		public SolutionItem(Package package, Solution solution, bool recursive)
 		{
-			if (package == null)
-			{
-				throw (new ArgumentNullException(nameof(package)));
-			}
-
-			if (solution == null)
-			{
-				throw (new ArgumentNullException(nameof(solution)));
-			}
-
+			ThreadHelper.ThrowIfNotOnUIThread();
 			IncrementSettings = new SolutionItemIncrementSettings(this);
 
-			Package = package;
-			_item = solution;
+			Package = package ?? throw new ArgumentNullException(nameof(package));
+			_item = solution ?? throw new ArgumentNullException(nameof(solution));
 			ItemType = SolutionItemType.Solution;
 			Icon = IconReader.AddFileIcon(solution.FileName).ToImageSource();
 			Name = Path.GetFileNameWithoutExtension(solution.FileName);
@@ -85,20 +76,11 @@ namespace BuildVersionIncrement.Model
 
 		private SolutionItem(Package package, Project project, bool recursive)
 		{
-			if (project == null)
-			{
-				throw (new ArgumentNullException(nameof(project)));
-			}
-
-			if (package == null)
-			{
-				throw (new ArgumentNullException(nameof(package)));
-			}
-
+			ThreadHelper.ThrowIfNotOnUIThread();
 			IncrementSettings = new SolutionItemIncrementSettings(this);
 
-			Package = package;
-			_item = project;
+			Package = package ?? throw new ArgumentNullException(nameof(package));
+			_item = project ?? throw new ArgumentNullException(nameof(project));
 			Name = project.Name;
 
 			Filename = project.FileName;
@@ -129,13 +111,20 @@ namespace BuildVersionIncrement.Model
 
 		[Browsable(false)]
 		public BuildDependency BuildDependency
-			=> DTE.Solution.SolutionBuild.BuildDependencies.Item(UniqueName);
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return DTE.Solution.SolutionBuild.BuildDependencies.Item(UniqueName);
+			}
+		}
 
 		[Browsable(false)]
 		public DTE DTE
 		{
 			get
 			{
+				Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 				switch (ItemType)
 				{
 					case SolutionItemType.Project:
@@ -156,6 +145,7 @@ namespace BuildVersionIncrement.Model
 		{
 			get
 			{
+				Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 				switch (ItemType)
 				{
 					case SolutionItemType.Solution:
@@ -172,7 +162,14 @@ namespace BuildVersionIncrement.Model
 
 #if DEBUG
 
-		public string Guid => ItemType != SolutionItemType.Solution ? Project.Kind : string.Empty;
+		public string Guid
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return ItemType != SolutionItemType.Solution ? Project.Kind : string.Empty;
+			}
+		}
 #endif
 
 		public ImageSource Icon
@@ -241,12 +238,26 @@ namespace BuildVersionIncrement.Model
 		public Package Package { get; }
 
 		[Browsable(false)]
-		public Project Project => (Project)_item;
+		public Project Project
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return (Project)_item;
+			}
+		}
 
 		public LanguageType ProjectType { get; set; } = LanguageType.None;
 
 		[Browsable(false)]
-		public Solution Solution => (Solution)_item;
+		public Solution Solution
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return (Solution)_item;
+			}
+		}
 
 		[SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
 		[SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
@@ -261,11 +272,13 @@ namespace BuildVersionIncrement.Model
 
 		public static SolutionItem ConstructSolutionItem(Package connect, Project project)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			return ConstructSolutionItem(connect, project, true);
 		}
 
 		public static SolutionItem ConstructSolutionItem(Package connect, Project project, bool recursive)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			SolutionItem ret = null;
 
 			if (IsValidSolutionItem(project))
@@ -296,6 +309,7 @@ namespace BuildVersionIncrement.Model
 
 		public ProjectItem FindProjectItem(string name)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			ProjectItem ret = null;
 
 			if (ItemType == SolutionItemType.Project)
@@ -308,6 +322,7 @@ namespace BuildVersionIncrement.Model
 
 		public void SetGlobalVariable(string varName, string value)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			GlobalVariables.SetGlobalVariable(Globals, varName, value);
 		}
 
@@ -318,6 +333,7 @@ namespace BuildVersionIncrement.Model
 
 		public void SetGlobalVariables()
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			IncrementSettings.Save();
 
 			foreach (var child in SubItems)
@@ -341,17 +357,22 @@ namespace BuildVersionIncrement.Model
 
 			foreach (var item in
 				projects.Cast<Project>()
-				        .Select(p => ConstructSolutionItem(connect, p))
-				        .Where(item => item != null))
+						.Select(p =>
+						{
+							ThreadHelper.ThrowIfNotOnUIThread();
+							return ConstructSolutionItem(connect, p);
+						})
+						.Where(item => item != null))
 			{
 				solutionItem.SubItems.Add(item);
 			}
 		}
 
 		private static void FillSolutionTree(Package connect,
-		                                     SolutionItem solutionItem,
-		                                     ProjectItems projectItems)
+											 SolutionItem solutionItem,
+											 ProjectItems projectItems)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			if (projectItems == null)
 			{
 				return;
@@ -359,8 +380,8 @@ namespace BuildVersionIncrement.Model
 
 			foreach (var item in
 				projectItems.Cast<ProjectItem>()
-				            .Select(p => ConstructSolutionItem(connect, p.SubProject))
-				            .Where(item => item != null))
+							.Select(p => { Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread(); return ConstructSolutionItem(connect, p.SubProject); })
+							.Where(item => item != null))
 			{
 				solutionItem.SubItems.Add(item);
 			}
@@ -368,6 +389,7 @@ namespace BuildVersionIncrement.Model
 
 		private static ProjectItem FindProjectItem(IEnumerable projectItems, string name)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			if (projectItems == null)
 			{
 				return null;
@@ -397,13 +419,14 @@ namespace BuildVersionIncrement.Model
 
 		private static bool IsValidSolutionItem(Project p)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			try
 			{
 				if (p?.Object != null && !string.IsNullOrEmpty(p.Kind)
-				    && (p.Kind == "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
-				        || p.Kind == "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}"
-				        || p.Kind == "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}"
-				        || p.Kind == "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}"))
+					&& (p.Kind == "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+						|| p.Kind == "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}"
+						|| p.Kind == "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}"
+						|| p.Kind == "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}"))
 				{
 					return true;
 				}
@@ -411,7 +434,7 @@ namespace BuildVersionIncrement.Model
 			catch (Exception ex)
 			{
 				Logger.Write($"Exception occured while checking project type \"{p?.UniqueName}\".\n{ex}",
-				             LogLevel.Error);
+							 LogLevel.Error);
 			}
 
 			return false;
@@ -419,6 +442,7 @@ namespace BuildVersionIncrement.Model
 
 		private void GetGlobalVariables()
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			IncrementSettings.Load();
 		}
 	}

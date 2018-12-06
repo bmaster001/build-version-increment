@@ -31,6 +31,7 @@ namespace BuildVersionIncrement.Model
 	{
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			var solutionItem = ((SolutionItemIncrementSettings)context.Instance).SolutionItem;
 
 			var items = CreateList(solutionItem);
@@ -50,6 +51,7 @@ namespace BuildVersionIncrement.Model
 
 		private static object[] CreateList(SolutionItem solutionItem)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			var ret = new ArrayList {"Any"};
 
 			if (solutionItem.ItemType == SolutionItemType.Solution)
@@ -60,7 +62,7 @@ namespace BuildVersionIncrement.Model
 
 				foreach (
 					var config in
-						configs.Cast<SolutionConfiguration>().Where(config => lastConfigName[0] != config.Name))
+						configs.Cast<SolutionConfiguration>().Where(config => { Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread(); return lastConfigName[0] != config.Name; }))
 				{
 					ret.Add(config.Name);
 					lastConfigName[0] = config.Name;

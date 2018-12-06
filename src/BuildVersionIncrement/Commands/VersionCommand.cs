@@ -47,12 +47,14 @@ namespace BuildVersionIncrement.Commands
 
 		protected override OleMenuCommand GetCommand(CommandID menuCommandId)
 		{
-			return new OleMenuCommand(ManuallyVersionAssemblies, menuCommandId);
+#pragma warning disable VSTHRD101 // Avoid unsupported async delegates
+			return new OleMenuCommand(async (s, e) => await ManuallyVersionAssembliesAsync(s, e), menuCommandId);
+#pragma warning restore VSTHRD101 // Avoid unsupported async delegates
 		}
 
-		private static void ManuallyVersionAssemblies(object sender, EventArgs e)
+		private static async System.Threading.Tasks.Task ManuallyVersionAssembliesAsync(object sender, EventArgs e)
 		{
-			BuildVersionIncrementor.Instance.OnBuildBegin(vsBuildScope.vsBuildScopeSolution, vsBuildAction.vsBuildActionBuild);
+			await BuildVersionIncrementor.Instance.OnBuildBeginAsync(vsBuildScope.vsBuildScopeSolution, vsBuildAction.vsBuildActionBuild);
 		}
 	}
 }

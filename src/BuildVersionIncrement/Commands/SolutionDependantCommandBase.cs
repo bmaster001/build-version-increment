@@ -38,6 +38,7 @@ namespace BuildVersionIncrement.Commands
 
 		private void MenuItem_BeforeQueryStatus(object sender, EventArgs e)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var menuCommand = sender as OleMenuCommand;
 			if (menuCommand == null)
 			{

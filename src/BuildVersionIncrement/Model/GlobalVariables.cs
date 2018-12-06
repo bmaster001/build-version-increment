@@ -33,6 +33,7 @@ namespace BuildVersionIncrement.Model
 			MessageId = "globals")]
 		public static string GetGlobalVariable(Globals globals, string varName, string defaultValue)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			if (globals == null)
 			{
 				return defaultValue;
@@ -57,6 +58,7 @@ namespace BuildVersionIncrement.Model
 		                                     string value,
 		                                     string defaultValue)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			if (globals == null)
 			{
 				return;
@@ -79,6 +81,7 @@ namespace BuildVersionIncrement.Model
 
 		public static void SetGlobalVariable(Globals globals, string varName, string value)
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			globals[varName] = value;
 
 			globals.VariablePersists[varName] = true;

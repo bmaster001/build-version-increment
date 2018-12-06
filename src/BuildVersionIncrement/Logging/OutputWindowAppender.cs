@@ -19,6 +19,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------
 
+using Microsoft;
+using Microsoft.VisualStudio.Shell;
+
 namespace BuildVersionIncrement.Logging
 {
 	using System;
@@ -43,12 +46,13 @@ namespace BuildVersionIncrement.Logging
 
 		protected override void Append(LoggingEvent loggingEvent)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
 			var dte = (DTE2)ServiceProvider.GetService(typeof(DTE));
-
+			Assumes.Present(dte);
 			var panes = dte.ToolWindows.OutputWindow.OutputWindowPanes;
 			var errorList = dte.ToolWindows.ErrorList;
 			var message = RenderLoggingEvent(loggingEvent);
-			foreach (var pane in panes.Cast<OutputWindowPane>().Where(pane => pane.Name.Contains("Build")))
+			foreach (var pane in panes.Cast<OutputWindowPane>().Where(pane => { Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread(); return pane.Name.Contains("Build"); }))
 			{
 				if (loggingEvent.Level == Level.Debug || loggingEvent.Level == Level.Info)
 				{

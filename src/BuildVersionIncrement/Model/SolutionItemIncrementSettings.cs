@@ -28,7 +28,7 @@ namespace BuildVersionIncrement.Model
 	using System.Windows.Forms.Design;
 
 	using Logging;
-
+	using Microsoft.VisualStudio.Shell;
 	using Properties;
 
 	using UI;
@@ -87,7 +87,14 @@ namespace BuildVersionIncrement.Model
 		[Category("Project")]
 		[DisplayName("Project Kind")]
 		[ItemsSource(typeof(ProjectKindItemsSource))]
-		public string Guid => SolutionItem.Guid;
+		public string Guid
+		{
+			get
+			{
+				ThreadHelper.ThrowIfNotOnUIThread();
+				return SolutionItem.Guid;
+			}
+		}
 #endif
 
 		[ReadOnly(true)]
@@ -120,6 +127,7 @@ namespace BuildVersionIncrement.Model
 
 		public override void Load()
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			try
 			{
 				var versioningStyle = GlobalVariables.GetGlobalVariable(SolutionItem.Globals,
@@ -210,6 +218,7 @@ namespace BuildVersionIncrement.Model
 
 		public override void Save()
 		{
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 			GlobalVariables.SetGlobalVariable(SolutionItem.Globals,
 			                                  Resources.GlobalVarName_buildVersioningStyle,
 			                                  VersioningStyle.ToGlobalVariable(),
